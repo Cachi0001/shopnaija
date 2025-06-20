@@ -5,14 +5,18 @@
         "src": "package.json",
         "use": "@vercel/node",
         "config": {
-          "includeFiles": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "public/**", "index.html"]
+          "includeFiles": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "public/**", "index.html", "dist/**"]
         }
       }
     ],
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "/$1"
+        "dest": "/dist/$1"
+      },
+      {
+        "src": "/",
+        "dest": "/dist/index.html"
       }
     ]
   }

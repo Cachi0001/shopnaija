@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +18,7 @@ import { AdminStats } from "@/components/admin/AdminStats";
 import { AdminOverview } from "@/components/admin/AdminOverview";
 import { AdminOrdersTab } from "@/components/admin/AdminOrdersTab";
 import { AdminFeedbackTab } from "@/components/admin/AdminFeedbackTab";
-import { MobileHeader } from "@/components/admin/MobileHeader";
+import MobileHeader from "@/components/admin/MobileHeader";
 
 const AdminDashboard = () => {
   const { user, loading: authLoading, logout } = useAuth();
