@@ -2,15 +2,15 @@ import { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminService } from "@/services/AdminService";
 import { useQuery } from "@tanstack/react-query";
+import StoreFront from "@/pages/StoreFront";
 
 interface SubdomainRouterProps {
   children: ReactNode;
-  adminContent: ReactNode;
 }
 
-const SubdomainRouter = ({ children, adminContent }: SubdomainRouterProps) => {
+const SubdomainRouter = ({ children }: SubdomainRouterProps) => {
   try {
-    console.log('[SubdomainRouter] Rendering. children:', !!children, 'adminContent:', !!adminContent);
+    console.log('[SubdomainRouter] Rendering. children:', !!children);
     const { subdomain, loading } = useAuth();
 
     // Query to get admin info for this subdomain
@@ -58,7 +58,7 @@ const SubdomainRouter = ({ children, adminContent }: SubdomainRouterProps) => {
       }
 
       // Pass admin data to admin content for branding
-      return <>{adminContent}</>;
+      return <StoreFront /></>;
     }
 
     // If we have superadmin subdomain or no subdomain, show main content

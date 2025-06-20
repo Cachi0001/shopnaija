@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { User } from "@/types"; // Your custom User type
 import { AuthService } from "@/services/AuthService";
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +30,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Create stable callbacks to prevent unnecessary re-renders
+  const showToast = useCallback((message: { title: string; description: string; variant?: "destructive" }) => {
+    toast(message);
+  }, [toast]);
+
+  const navigateToPath = useCallback((path: string) => {
+    navigate(path, { replace: true });
+  }, [navigate]);
 
   const getDashboardPath = (role: 'superadmin' | 'admin' | 'customer' | string | undefined) => {
     switch (role) {
@@ -80,19 +89,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const currentPath = location.pathname;
             const targetPath = getDashboardPath(authenticatedUser.role);
             if (currentPath.startsWith('/auth') || currentPath === '/login' || (targetPath && currentPath !== targetPath)) {
-              navigate(targetPath, { replace: true });
+              navigateToPath(targetPath);
             }
           }
         }
       } catch (error: any) {
         console.error('Auth initialization failed:', error);
-        toast({ title: "Authentication Error", description: error.message || "Failed to initialize authentication.", variant: "destructive" });
+        showToast({ title: "Authentication Error", description: error.message || "Failed to initialize authentication.", variant: "destructive" });
         if (mounted) {
           setUser(null);
           setSession(null);
           setIsSuperAdmin(false);
           setIsAdmin(false);
-          navigate('/login', { replace: true });
+          navigateToPath('/login');
         }
       } finally {
         if (mounted) setLoading(false);
@@ -114,19 +123,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (location.pathname.startsWith('/auth') || location.pathname === '/login') {
           const redirectPath = getDashboardPath(fetchedUser?.role);
-          navigate(redirectPath, { replace: true });
+          navigateToPath(redirectPath);
         }
       } else {
         setUser(null);
         setSession(null); // Clear session on logout
         setIsSuperAdmin(false);
         setIsAdmin(false);
-        if (location.pathname !== '/login') navigate('/login', { replace: true });
+        if (location.pathname !== '/login') navigateToPath('/login');
       }
     });
 
     return () => { mounted = false; subscription.unsubscribe(); };
-  }, [navigate, toast, location]);
+  }, [location.pathname, showToast, navigateToPath]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -136,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // State change listener will handle setting user/session and navigation on success
     } catch (error: any) {
       console.error('Login function caught error:', error);
-      toast({ title: "Login Failed", description: error.message || "An unexpected error occurred during login.", variant: "destructive" });
+      showToast({ title: "Login Failed", description: error.message || "An unexpected error occurred during login.", variant: "destructive" });
       // No need to throw here, handled by toast and finally block
     } finally {
       // Loading is set to false by initializeAuth or onAuthStateChange based on final state
@@ -153,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // State change listener will handle clearing user/session and navigation on success
     } catch (error: any) {
       console.error('Logout function caught error:', error);
-      toast({ title: "Logout Failed", description: error.message || "An error occurred during logout.", variant: "destructive" });
+      showToast({ title: "Logout Failed", description: error.message || "An error occurred during logout.", variant: "destructive" });
       // No need to throw here, handled by toast and finally block
     } finally {
       // Loading is set to false by the state change listener on SIGNED_OUT
