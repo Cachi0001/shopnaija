@@ -18,15 +18,11 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      // Force correct path to @supabase/postgrest-js ES Module
-      '@supabase/postgrest-js': path.resolve(__dirname, 'node_modules/@supabase/postgrest-js/dist/module/index.js'),
     },
   },
-  optimizeDeps: {
-    exclude: ['@supabase/supabase-js', '@supabase/postgrest-js'],
-    esbuildOptions: {
-      mainFields: ['module', 'main'],
-      target: 'esnext',
-    },
-  },
+  build: {
+    rollupOptions: {
+      // Remove external: ['@supabase/supabase-js']
+    }
+  }
 }));
