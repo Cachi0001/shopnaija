@@ -5,10 +5,17 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 
 const LandingPage = () => {
+  // Debug: Log when component mounts
+  console.log('[LandingPage] Component mounted');
   try {
-    console.log('[LandingPage] Rendering');
     const { toast } = useToast();
     const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [renderError, setRenderError] = useState<string | null>(null);
+
+    // Debug: Log online status changes
+    useEffect(() => {
+      console.log('[LandingPage] Online status:', isOnline);
+    }, [isOnline]);
 
     // Check network status
     useEffect(() => {
@@ -51,6 +58,7 @@ const LandingPage = () => {
 
     // Show offline indicator
     if (!isOnline) {
+      console.log('[LandingPage] Offline detected');
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center max-w-md mx-auto px-4">
@@ -65,6 +73,21 @@ const LandingPage = () => {
             >
               <Wifi className="h-4 w-4 mr-2" />
               Retry
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    // If a render error occurred, show it
+    if (renderError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md mx-auto px-4">
+            <h1 className="text-2xl font-bold text-red-600 mb-2">Error Loading Page</h1>
+            <p className="text-gray-600 mb-6">{renderError}</p>
+            <Button onClick={() => window.location.reload()} className="bg-green-600 hover:bg-green-700">
+              Reload
             </Button>
           </div>
         </div>
@@ -389,7 +412,18 @@ const LandingPage = () => {
     );
   } catch (err) {
     console.error('[LandingPage] Error during render:', err);
-    throw err;
+    // Show a visible error message instead of throwing
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md mx-auto px-4">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Error Loading Page</h1>
+          <p className="text-gray-600 mb-6">{err instanceof Error ? err.message : String(err)}</p>
+          <Button onClick={() => window.location.reload()} className="bg-green-600 hover:bg-green-700">
+            Reload
+          </Button>
+        </div>
+      </div>
+    );
   }
 };
 
