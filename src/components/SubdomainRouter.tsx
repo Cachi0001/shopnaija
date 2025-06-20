@@ -58,7 +58,7 @@ const SubdomainRouter = ({ children }: SubdomainRouterProps) => {
       }
 
       // Pass admin data to admin content for branding
-      return <StoreFront /></>;
+      return <StoreFront />;
     }
 
     // If we have superadmin subdomain or no subdomain, show main content
