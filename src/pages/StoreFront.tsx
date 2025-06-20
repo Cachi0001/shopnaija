@@ -24,6 +24,8 @@ import { useToast } from "@/hooks/use-toast";
 import { type Product, type CartItem } from "@/types/index"; // Import types
 
 const StoreFront = () => {
+  try {
+    console.log('[StoreFront] Rendering');
   const { subdomain } = useParams<{ subdomain: string }>();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,7 +57,7 @@ const StoreFront = () => {
   // Fetch products for this admin
    const { data: products, isLoading: isProductsLoading } = useQuery<Product[]>({ // Use Product type
     queryKey: ['products', adminData?.id],
-    queryFn: () => adminData?.id ? ProductService.getProductsByAdminId(adminData.id) : [], // Assuming getProductsByAdminId
+      queryFn: (): Promise<Product[]> => adminData?.id ? ProductService.getProductsByAdmin(adminData.id) : Promise.resolve([]), // Explicitly type as Promise<Product[]>
     enabled: !!adminData?.id, // Only run if adminData.id is available
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -469,7 +471,7 @@ const StoreFront = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            )}
         </div>
 
         {/* Display message if no products */}
@@ -543,9 +545,9 @@ const StoreFront = () => {
                            className="mt-4 w-full"
                            style={{ backgroundColor: adminData?.primary_color || '#16a34a', color: '#fff' }} // Ensure text color is white
                            onClick={handleCheckout}
-                           disabled={cart.length === 0 || createOrder.isLoading || !customerDetails.name || !customerDetails.email || !customerDetails.phone} // Disable if details are missing
+                             disabled={cart.length === 0 || createOrder.isPending || !customerDetails.name || !customerDetails.email || !customerDetails.phone} // Disable if details are missing
                        >
-                           {createOrder.isLoading ? "Processing..." : `Checkout (₦${cart.reduce((sum, item) => sum + ((item.original_price ?? item.price) * 1.05) * item.quantity, 0).toLocaleString()})`}
+                             {createOrder.isPending ? "Processing..." : `Checkout (₦${cart.reduce((sum, item) => sum + ((item.original_price ?? item.price) * 1.05) * item.quantity, 0).toLocaleString()})`}
                        </Button>
                     )}
                </CardContent>
@@ -554,6 +556,10 @@ const StoreFront = () => {
 
     </div>
   );
+  } catch (err) {
+    console.error('[StoreFront] Error during render:', err);
+    throw err;
+  }
 };
 
 export default StoreFront;

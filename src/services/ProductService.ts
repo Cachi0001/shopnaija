@@ -4,7 +4,7 @@ export const ProductService = {
   async getProductsByAdmin(adminId: string) {
     const { data, error } = await supabase
       .from('products')
-      .select('id, title, description, price, locationState, locationAddress, lga, created_at, *')
+      .select('id, title, description, price, image_public_id, image_url, category_id, location, created_at, updated_at, admin_id, original_price')
       .eq('admin_id', adminId);
     if (error) throw error;
     return data || [];
