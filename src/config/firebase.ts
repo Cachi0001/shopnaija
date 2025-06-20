@@ -12,14 +12,28 @@ const firebaseConfig = {
   measurementId: "G-CBDD84PF21"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+// Initialize Firebase with error handling
+let app: any = null;
+let messaging: any = null;
+
+try {
+  app = initializeApp(firebaseConfig);
+  messaging = getMessaging(app);
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Firebase initialization failed:', error);
+  console.warn('Push notifications will not be available');
+}
 
 const vapidKey = "BMLD7VerB0gEaLcUgPTswV6Ldt4J9BxZiEhGEZS_BFUJjDmMOA8FEudH4867HA5qSvnBZlz5plCbWQ7Xbj_wru4";
 
 export const requestNotificationPermission = async () => {
   try {
+    if (!messaging) {
+      console.warn('Firebase messaging not available');
+      return null;
+    }
+
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       const token = await getToken(messaging, { vapidKey });
@@ -41,7 +55,13 @@ export const requestNotificationPermission = async () => {
 };
 
 export const onMessageListener = () =>
-  new Promise((resolve) => {
+  new Promise((resolve, reject) => {
+    if (!messaging) {
+      console.warn('Firebase messaging not available');
+      reject(new Error('Firebase messaging not initialized'));
+      return;
+    }
+    
     onMessage(messaging, (payload) => {
       console.log('Received foreground message:', payload);
       resolve(payload);

@@ -50,10 +50,14 @@ export class AdminService {
       .select('*')
       .eq('id', id)
       .eq('role', 'admin')
-      .single();
+      .maybeSingle(); // Use maybeSingle to handle cases where admin doesn't exist
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error(`Error fetching admin with id ${id}:`, error);
+      throw error;
+    }
+    
+    return data; // Will return null if admin not found
   }
 
   static async getAdminBySubdomain(subdomain: string) {
@@ -62,10 +66,14 @@ export class AdminService {
       .select('*')
       .eq('subdomain', subdomain)
       .eq('role', 'admin')
-      .single();
+      .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error(`Error fetching admin for subdomain ${subdomain}:`, error);
+      throw error;
+    }
+    
+    return data; // Will return null if no admin found, which is what we want
   }
 
   static async updateAdmin(id: string, updates: Partial<AdminCreateData & { is_active: boolean; referral_code: string }>) {

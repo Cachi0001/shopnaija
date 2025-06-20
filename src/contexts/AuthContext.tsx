@@ -71,37 +71,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const initializeAuth = async () => {
       try {
+        // Check if Supabase is properly configured
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder') || supabaseKey.includes('placeholder')) {
+          console.warn('Supabase not properly configured. Running in offline mode.');
+          if (mounted) {
+            setUser(null);
+            setSession(null);
+            setIsSuperAdmin(false);
+            setIsAdmin(false);
+            setLoading(false);
+          }
+          return;
+        }
+
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
 
         let authenticatedUser: User | null = null;
         if (session?.user) {
-          authenticatedUser = await AuthService.getCurrentUser(session.user);
+          try {
+            authenticatedUser = await AuthService.getCurrentUser(session.user);
+          } catch (userError) {
+            console.error('Error fetching user profile:', userError);
+            // Continue with basic session info if profile fetch fails
+            authenticatedUser = null;
+          }
         }
 
         if (mounted) {
           setUser(authenticatedUser);
-          setSession(session || null); // Store session
+          setSession(session || null);
           setIsSuperAdmin(authenticatedUser?.role === 'superadmin');
           setIsAdmin(authenticatedUser?.role === 'admin');
 
+          // Only redirect if we have a valid user and we're on auth pages
           if (authenticatedUser && authenticatedUser.id) {
             const currentPath = location.pathname;
             const targetPath = getDashboardPath(authenticatedUser.role);
-            if (currentPath.startsWith('/auth') || currentPath === '/login' || (targetPath && currentPath !== targetPath)) {
+            if (currentPath.startsWith('/auth') || currentPath === '/login') {
               navigateToPath(targetPath);
             }
           }
         }
       } catch (error: any) {
         console.error('Auth initialization failed:', error);
-        showToast({ title: "Authentication Error", description: error.message || "Failed to initialize authentication.", variant: "destructive" });
+        
+        // Only show toast if it's not a configuration issue
+        if (!error.message?.includes('placeholder') && !error.message?.includes('Missing')) {
+          showToast({ 
+            title: "Authentication Error", 
+            description: "Unable to connect to authentication service. Some features may be limited.", 
+            variant: "destructive" 
+          });
+        }
+        
         if (mounted) {
           setUser(null);
           setSession(null);
           setIsSuperAdmin(false);
           setIsAdmin(false);
-          navigateToPath('/login');
+          // Don't force navigation to login if there's a service error
         }
       } finally {
         if (mounted) setLoading(false);
@@ -110,31 +145,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth();
 
-    const { data: { subscription } } = AuthService.onAuthStateChange(async (eventUser) => {
-      if (!mounted) return;
+    // Only set up auth state listener if Supabase is properly configured
+    let subscription: any = { unsubscribe: () => {} };
+    
+    try {
+      const authStateListener = AuthService.onAuthStateChange(async (eventUser) => {
+        if (!mounted) return;
 
-      if (eventUser) {
-        const fetchedUser = await AuthService.getCurrentUser(eventUser);
-        setUser(fetchedUser);
-        // Get and set the latest session when auth state changes
-        setSession(await supabase.auth.getSession().then(({ data }) => data.session || null));
-        setIsSuperAdmin(fetchedUser?.role === 'superadmin');
-        setIsAdmin(fetchedUser?.role === 'admin');
+        try {
+          if (eventUser) {
+            const fetchedUser = await AuthService.getCurrentUser(eventUser);
+            setUser(fetchedUser);
+            
+            // Safely get session
+            try {
+              const { data: sessionData } = await supabase.auth.getSession();
+              setSession(sessionData.session || null);
+            } catch (sessionError) {
+              console.error('Error getting session:', sessionError);
+              setSession(null);
+            }
+            
+            setIsSuperAdmin(fetchedUser?.role === 'superadmin');
+            setIsAdmin(fetchedUser?.role === 'admin');
 
-        if (location.pathname.startsWith('/auth') || location.pathname === '/login') {
-          const redirectPath = getDashboardPath(fetchedUser?.role);
-          navigateToPath(redirectPath);
+            if (location.pathname.startsWith('/auth') || location.pathname === '/login') {
+              const redirectPath = getDashboardPath(fetchedUser?.role);
+              navigateToPath(redirectPath);
+            }
+          } else {
+            setUser(null);
+            setSession(null);
+            setIsSuperAdmin(false);
+            setIsAdmin(false);
+            if (location.pathname !== '/login' && !location.pathname.startsWith('/auth')) {
+              navigateToPath('/login');
+            }
+          }
+        } catch (error) {
+          console.error('Error in auth state change handler:', error);
         }
-      } else {
-        setUser(null);
-        setSession(null); // Clear session on logout
-        setIsSuperAdmin(false);
-        setIsAdmin(false);
-        if (location.pathname !== '/login') navigateToPath('/login');
-      }
-    });
+      });
+      
+      subscription = authStateListener.data;
+    } catch (error) {
+      console.error('Error setting up auth state listener:', error);
+    }
 
-    return () => { mounted = false; subscription.unsubscribe(); };
+    return () => { 
+      mounted = false; 
+      if (subscription && typeof subscription.unsubscribe === 'function') {
+        subscription.unsubscribe(); 
+      }
+    };
   }, [location.pathname, showToast, navigateToPath]);
 
   const login = async (email: string, password: string) => {

@@ -41,10 +41,10 @@ const App = () => {
     return (
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+          <BrowserRouter>
+            <AuthProvider>
+              <Toaster />
+              <Sonner />
               <Suspense fallback={<LoadingFallback message="Loading ShopNaija..." />}>
                 <SubdomainRouter>
                   <Routes>
@@ -103,8 +103,8 @@ const App = () => {
                   </Routes>
                 </SubdomainRouter>
               </Suspense>
-            </BrowserRouter>
-          </AuthProvider>
+            </AuthProvider>
+          </BrowserRouter>
         </QueryClientProvider>
       </ErrorBoundary>
     );
