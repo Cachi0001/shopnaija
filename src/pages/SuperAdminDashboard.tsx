@@ -18,9 +18,11 @@ import ReferralTracking from "@/components/superadmin/ReferralTracking";
 import DashboardStats from "@/components/superadmin/DashboardStats";
 import RecentActivity from "@/components/superadmin/RecentActivity";
 import TopPerformingStores from "@/components/superadmin/TopPerformingStores";
+import { CreateAdminDialog } from "@/components/superadmin/CreateAdminDialog";
 
 const SuperAdminDashboard = () => {
   const { user } = useAuth();
+  const [isCreateAdminOpen, setIsCreateAdminOpen] = useState(false);
 
   // Mock stats - in real app, these would come from API
   const stats = {
@@ -45,7 +47,7 @@ const SuperAdminDashboard = () => {
           </p>
         </div>
         <div className="mt-4 md:mt-0">
-          <Button className="bg-brand-800 hover:bg-brand-700">
+          <Button className="bg-brand-800 hover:bg-brand-700" onClick={() => setIsCreateAdminOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" /> 
             Create New Admin
           </Button>
@@ -106,6 +108,8 @@ const SuperAdminDashboard = () => {
           <NotificationCenter />
         </TabsContent>
       </Tabs>
+
+      <CreateAdminDialog isOpen={isCreateAdminOpen} onOpenChange={setIsCreateAdminOpen} />
     </div>
   );
 };
