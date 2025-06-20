@@ -25,14 +25,28 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     this.setState({ error, errorInfo });
     // Enhanced logging for production debugging
     const route = window.location.pathname;
+    const hash = window.location.hash;
     let user = null;
     try {
       user = window.__USER__ || JSON.parse(localStorage.getItem('user') || 'null');
     } catch (e) {}
     console.error("ErrorBoundary caught an error:", error, errorInfo, {
       route,
+      hash,
       user,
+      props: this.props,
+      env: process.env.NODE_ENV,
     });
+  }
+
+  componentDidMount() {
+    // Global error handlers
+    window.onerror = (msg, url, lineNo, columnNo, error) => {
+      console.error('Global window.onerror:', { msg, url, lineNo, columnNo, error });
+    };
+    window.onunhandledrejection = (event) => {
+      console.error('Global window.onunhandledrejection:', event.reason);
+    };
   }
 
   render() {
