@@ -471,7 +471,7 @@ const StoreFront = () => {
                 </div>
               </CardContent>
             </Card>
-            )}
+          ))}
         </div>
 
         {/* Display message if no products */}
