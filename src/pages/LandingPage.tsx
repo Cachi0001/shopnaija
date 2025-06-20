@@ -159,6 +159,11 @@ const LandingPage = () => {
       }
     ];
 
+    // Defensive: ensure features is always an array
+    const safeFeatures = Array.isArray(features) ? features : [];
+    // Defensive: ensure testimonials is always an array
+    const safeTestimonials = Array.isArray(testimonials) ? testimonials : [];
+
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
@@ -216,7 +221,7 @@ const LandingPage = () => {
               </p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {features.map((feature, index) => (
+              {safeFeatures.map((feature, index) => (
                 <div key={index} className="text-center p-6 sm:p-8 rounded-xl bg-gray-50 hover:bg-green-50 transition-colors">
                   <feature.icon className="h-10 w-10 sm:h-12 sm:w-12 text-green-600 mx-auto mb-4" />
                   <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
@@ -300,10 +305,12 @@ const LandingPage = () => {
               </p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {testimonials.map((testimonial, index) => (
+              {safeTestimonials.map((testimonial, index) => (
                 <div key={index} className="bg-white p-6 rounded-xl shadow-lg">
                   <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
+                    {Array(
+                      Number.isFinite(testimonial.rating) && testimonial.rating > 0 ? Math.floor(testimonial.rating) : 0
+                    ).fill(null).map((_, i) => (
                       <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 fill-current" />
                     ))}
                   </div>
