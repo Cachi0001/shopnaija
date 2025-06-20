@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -35,92 +34,96 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<LoadingFallback message="Loading ShopNaija..." />}>
-            <Routes>
-              {/* Public routes */}
-              <Route 
-                path="/" 
-                element={
-                  <SubdomainRouter 
-                    // Root domain or superadmin subdomain shows landing page
-                    children={<LandingPage />} 
-                    // Admin subdomains show store frontend
-                    adminContent={<StoreFront />} 
+const App = () => {
+  try {
+    console.log('[App] Rendering. Current route:', window.location.pathname);
+    return (
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Suspense fallback={<LoadingFallback message="Loading ShopNaija..." />}>
+                <Routes>
+                  {/* Public routes */}
+                  <Route 
+                    path="/" 
+                    element={
+                      (() => {
+                        console.log('[App] Rendering SubdomainRouter on /');
+                        return (
+                          <SubdomainRouter 
+                            children={<LandingPage />} 
+                            adminContent={<StoreFront />} 
+                          />
+                        );
+                      })()
+                    } 
                   />
-                } 
-              />
-
-              {/* Store front for specific subdomains */}
-              <Route path="/:subdomain" element={<StoreFront />} />
-
-              {/* Authentication routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-
-              {/* Super Admin Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute requiredRole="superadmin">
-                    <DashboardLayout>
-                      <SuperAdminDashboard />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Admin Routes */}
-              <Route
-                path="/admin/dashboard"
-                element={
-                  <ProtectedRoute requiredRole="admin">
-                    <DashboardLayout>
-                      <AdminDashboard />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/admin/products"
-                element={
-                  <ProtectedRoute requiredRole="admin">
-                    <DashboardLayout>
-                      <AdminDashboard />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              <Route
-                path="/admin/settings"
-                element={
-                  <ProtectedRoute requiredRole="admin">
-                    <DashboardLayout>
-                      <AdminDashboard />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* 404 fallback */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </AuthProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-);
+                  {/* Store front for specific subdomains */}
+                  <Route path="/:subdomain" element={<StoreFront />} />
+                  {/* Authentication routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  {/* Super Admin Routes */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute requiredRole="superadmin">
+                        <DashboardLayout>
+                          <SuperAdminDashboard />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* Admin Routes */}
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <DashboardLayout>
+                          <AdminDashboard />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/products"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <DashboardLayout>
+                          <AdminDashboard />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/settings"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <DashboardLayout>
+                          <AdminDashboard />
+                        </DashboardLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* 404 fallback */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    );
+  } catch (err) {
+    console.error('[App] Synchronous error during render:', err, window.location.pathname);
+    throw err;
+  }
+};
 
 export default App;

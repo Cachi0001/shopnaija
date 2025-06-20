@@ -6,6 +6,7 @@
 - FIX: Added a default export to src/components/ErrorBoundary.tsx to resolve Vercel build error caused by import/export mismatch (so it can be imported as 'import ErrorBoundary from ...').
 - ENHANCEMENT: ErrorBoundary now logs the current route (window.location.pathname) and user object (from window or localStorage) when an error is caught, to help debug production errors.
 - ENHANCEMENT: ErrorBoundary now logs window.location, window.location.hash, process.env.NODE_ENV, props, and attaches global error handlers for uncaught errors and unhandled promise rejections.
+- ENHANCEMENT: Added console logging and try/catch in App.tsx to log which route and main component is being rendered, to help debug the root error on '/'.
 
 [Planned Change - YYYY-MM-DD]
 
