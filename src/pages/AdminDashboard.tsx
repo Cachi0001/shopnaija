@@ -19,6 +19,7 @@ import { AdminOverview } from "@/components/admin/AdminOverview";
 import { AdminOrdersTab } from "@/components/admin/AdminOrdersTab";
 import { AdminFeedbackTab } from "@/components/admin/AdminFeedbackTab";
 import MobileHeader from "@/components/admin/MobileHeader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const AdminDashboard = () => {
   const { user, loading: authLoading, logout } = useAuth();
@@ -286,45 +287,47 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <AdminSidebar
-        user={user}
-        activeTab={activeTab}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        onTabChange={handleTabChange}
-        onLogout={handleLogout}
-      />
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50 flex">
+        <AdminSidebar
+          user={user}
+          activeTab={activeTab}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          onTabChange={handleTabChange}
+          onLogout={handleLogout}
+        />
 
-      <div className="flex-1 lg:ml-0">
-        <MobileHeader setSidebarOpen={setSidebarOpen} />
+        <div className="flex-1 lg:ml-0">
+          <MobileHeader setSidebarOpen={setSidebarOpen} />
 
-        <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
-          <AdminHeader
-            user={user}
-            categories={categories}
-            editingProduct={editingProduct}
-            onProductSaved={handleProductSaved}
-            remainingProducts={remainingProducts}
-            uploading={uploading}
-            setUploading={setUploading}
-          />
+          <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+            <AdminHeader
+              user={user}
+              categories={categories}
+              editingProduct={editingProduct}
+              onProductSaved={handleProductSaved}
+              remainingProducts={remainingProducts}
+              uploading={uploading}
+              setUploading={setUploading}
+            />
 
-          <AdminStats
-            totalProducts={totalProducts}
-            totalOrders={totalOrders}
-            totalFeedback={totalFeedback}
-            productsThisWeek={productsThisWeek}
-            ordersToday={ordersToday}
-            feedbackThisWeek={feedbackThisWeek}
-          />
+            <AdminStats
+              totalProducts={totalProducts}
+              totalOrders={totalOrders}
+              totalFeedback={totalFeedback}
+              productsThisWeek={productsThisWeek}
+              ordersToday={ordersToday}
+              feedbackThisWeek={feedbackThisWeek}
+            />
 
-          <div className="space-y-6">
-            {renderMainContent()}
+            <div className="space-y-6">
+              {renderMainContent()}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

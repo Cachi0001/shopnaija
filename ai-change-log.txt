@@ -1,0 +1,13 @@
+[Completed Change - 2024-05-30]
+
+- Added a robust ErrorBoundary component in src/components/ErrorBoundary.tsx to catch and display errors gracefully in the dashboard.
+- Wrapped the main dashboard return block in src/pages/AdminDashboard.tsx with ErrorBoundary to ensure UI errors are caught and shown to the user.
+- Added console.error logging in ErrorBoundary for better error traceability.
+
+[Planned Change - YYYY-MM-DD]
+
+- Add a robust ErrorBoundary component to the main dashboard area (AdminDashboard.tsx) to catch and display errors gracefully.
+- Add extra logging to catch and log errors with more context in the dashboard and data-fetching logic.
+- Commit and push these changes to the GitHub repository.
+
+[Update this entry after changes are made.] 
