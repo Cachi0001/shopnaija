@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -511,8 +510,7 @@ const Auth = () => {
                     
                     {(isSuperAdminSubdomain || isAdminSubdomain) && (
                       <div className="text-center text-sm text-gray-600 p-4">
-                        Admin registration requires email signup with NIN verification.
-                        Please use the Email tab above.
+                        Admin registration requires email signup with NIN verification. Please use the Email tab above.
                       </div>
                     )}
                   </TabsContent>

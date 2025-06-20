@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null); // Store session using Supabase Session type
   const [subdomain, setSubdomain] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start with loading as true
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -31,22 +31,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Create stable callbacks to prevent unnecessary re-renders
+  // Stable toast function
   const showToast = useCallback((message: { title: string; description: string; variant?: "destructive" }) => {
     toast(message);
   }, [toast]);
 
-  const navigateToPath = useCallback((path: string) => {
-    navigate(path, { replace: true });
+  // Stable navigation function
+  const navigateToPath = useCallback((path: string, options?: { replace: boolean }) => {
+    navigate(path, options);
   }, [navigate]);
 
   const getDashboardPath = (role: 'superadmin' | 'admin' | 'customer' | string | undefined) => {
-    switch (role) {
-      case 'superadmin': return '/dashboard';
-      case 'admin': return '/admin/dashboard';
-      case 'customer': return '/';
-      default: return '/';
-    }
+    if (role === 'superadmin') return '/dashboard';
+    if (role === 'admin') return '/admin/dashboard';
+    return '/';
   };
 
   useEffect(() => {
@@ -59,152 +57,97 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } else {
       const parts = hostname.split('.');
-      if (parts.length >= 3 && parts[1] === 'growthsmallbeez') {
+      if (parts.length >= 3 && (parts[1] === 'growthsmallbeez' || parts[1] === 'shopnaija')) {
         potentialSubdomain = parts[0];
       }
     }
     setSubdomain(potentialSubdomain);
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
-    let mounted = true;
+    setLoading(true);
 
-    const initializeAuth = async () => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
-        // Check if Supabase is properly configured
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        
-        if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder') || supabaseKey.includes('placeholder')) {
-          console.warn('Supabase not properly configured. Running in offline mode.');
-          if (mounted) {
-            setUser(null);
-            setSession(null);
-            setIsSuperAdmin(false);
-            setIsAdmin(false);
-            setLoading(false);
-          }
-          return;
-        }
+        console.log(`[AuthContext] Auth state change event: ${event}`);
 
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
-        }
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+          if (session) {
+            const fetchedUser = await AuthService.getCurrentUser(session.user);
+            setUser(fetchedUser);
+            setSession(session);
+            setIsSuperAdmin(fetchedUser?.role === 'superadmin');
+            setIsAdmin(fetchedUser?.role === 'admin');
 
-        let authenticatedUser: User | null = null;
-        if (session?.user) {
-          try {
-            authenticatedUser = await AuthService.getCurrentUser(session.user);
-          } catch (userError) {
-            console.error('Error fetching user profile:', userError);
-            authenticatedUser = null;
-          }
-        }
-
-        if (mounted) {
-          setUser(authenticatedUser);
-          setSession(session || null);
-          setIsSuperAdmin(authenticatedUser?.role === 'superadmin');
-          setIsAdmin(authenticatedUser?.role === 'admin');
-
-          if (authenticatedUser && authenticatedUser.id) {
-            const currentPath = location.pathname;
-            const targetPath = getDashboardPath(authenticatedUser.role);
-            if (currentPath.startsWith('/auth') || currentPath === '/login') {
-              navigateToPath(targetPath);
+            // Redirect only if on a public/auth page
+            const publicPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
+            if (publicPaths.includes(location.pathname) || location.pathname.startsWith('/auth')) {
+                const redirectPath = getDashboardPath(fetchedUser?.role);
+                navigateToPath(redirectPath, { replace: true });
             }
           }
-        }
-      } catch (error: any) {
-        console.error('Auth initialization failed:', error);
-        
-        if (!error.message?.includes('placeholder') && !error.message?.includes('Missing')) {
-          showToast({ 
-            title: "Authentication Error", 
-            description: "Unable to connect to authentication service. Some features may be limited.", 
-            variant: "destructive" 
-          });
-        }
-        
-        if (mounted) {
+        } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setSession(null);
           setIsSuperAdmin(false);
           setIsAdmin(false);
-          setLoading(false);
-        }
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    let subscription: any = { unsubscribe: () => {} };
-    
-    try {
-      const authStateListener = AuthService.onAuthStateChange(async (eventUser) => {
-        if (!mounted) return;
-
-        try {
-          if (eventUser) {
-            const fetchedUser = await AuthService.getCurrentUser(eventUser);
-            setUser(fetchedUser);
-            
-            try {
-              const { data: sessionData } = await supabase.auth.getSession();
-              setSession(sessionData.session || null);
-            } catch (sessionError) {
-              console.error('Error getting session:', sessionError);
-              setSession(null);
-            }
-            
-            setIsSuperAdmin(fetchedUser?.role === 'superadmin');
-            setIsAdmin(fetchedUser?.role === 'admin');
-
-            if (location.pathname.startsWith('/auth') || location.pathname === '/login') {
-              const redirectPath = getDashboardPath(fetchedUser?.role);
-              navigateToPath(redirectPath);
-            }
-          } else {
-            setUser(null);
-            setSession(null);
-            setIsSuperAdmin(false);
-            setIsAdmin(false);
-            if (location.pathname !== '/login' && !location.pathname.startsWith('/auth')) {
-              navigateToPath('/login');
-            }
+          const protectedPaths = ['/dashboard', '/admin/dashboard'];
+          if (protectedPaths.some(p => location.pathname.startsWith(p))) {
+            navigateToPath('/login', { replace: true });
           }
-        } catch (error) {
-          console.error('Error in auth state change handler:', error);
-        } finally {
-          if (mounted) setLoading(false); // Ensure loading is set to false after auth state change
         }
-      });
-      
-      subscription = authStateListener.data;
-    } catch (error) {
-      console.error('Error setting up auth state listener:', error);
-    }
+      } catch (error) {
+        console.error('Error handling auth state change:', error);
+        showToast({
+          title: "Authentication Error",
+          description: "An error occurred. Please try refreshing.",
+          variant: "destructive",
+        });
+        setUser(null);
+        setSession(null);
+        setIsSuperAdmin(false);
+        setIsAdmin(false);
+      } finally {
+        setLoading(false);
+      }
+    });
 
-    return () => { 
-      mounted = false; 
-      if (subscription && typeof subscription.unsubscribe === 'function') {
-        subscription.unsubscribe(); 
+    // Initial check for session, in case onAuthStateChange doesn't fire immediately
+    const checkInitialSession = async () => {
+        try {
+            const { data: { session: initialSession } } = await supabase.auth.getSession();
+            if (!session && initialSession) { // If no session is set yet
+                const fetchedUser = await AuthService.getCurrentUser(initialSession.user);
+                setUser(fetchedUser);
+                setSession(initialSession);
+                setIsSuperAdmin(fetchedUser?.role === 'superadmin');
+                setIsAdmin(fetchedUser?.role === 'admin');
+            }
+        } catch (error) {
+            console.error('Error in initial session check:', error);
+        } finally {
+            // This is crucial for the very first load
+            if (loading) setLoading(false);
+        }
+    };
+    
+    checkInitialSession();
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
       }
     };
-  }, [location.pathname, showToast, navigateToPath]);
+  }, [navigateToPath, showToast, location.pathname]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
       await AuthService.signIn(email, password);
+      // onAuthStateChange will handle navigation and state updates
     } catch (error: any) {
-      console.error('Login function caught error:', error);
-      showToast({ title: "Login Failed", description: error.message || "An unexpected error occurred during login.", variant: "destructive" });
-    } finally {
+      console.error('Login function error:', error);
+      showToast({ title: "Login Failed", description: error.message || "Invalid credentials.", variant: "destructive" });
       setLoading(false);
     }
   };
@@ -213,19 +156,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       await AuthService.signOut();
+      // onAuthStateChange will handle state updates and navigation
     } catch (error: any) {
-      console.error('Logout function caught error:', error);
-      showToast({ title: "Logout Failed", description: error.message || "An error occurred during logout.", variant: "destructive" });
+      console.error('Logout function error:', error);
+      showToast({ title: "Logout Failed", description: error.message, variant: "destructive" });
     } finally {
+      // Set user/session to null immediately for faster UI response
+      setUser(null);
+      setSession(null);
       setLoading(false);
+      navigateToPath('/login', { replace: true });
     }
   };
 
   useEffect(() => {
-    console.log('[AuthContext] loading:', loading, 'user:', user, 'session:', session, 'subdomain:', subdomain);
-  }, [loading, user, session, subdomain]);
+    console.log(`[AuthContext] State Update: loading=${loading}, user=${!!user}, session=${!!session}, isAdmin=${isAdmin}, isSuperAdmin=${isSuperAdmin}`);
+  }, [loading, user, session, isAdmin, isSuperAdmin]);
 
   const value = { user, session, subdomain, loading, login, logout, isSuperAdmin, isAdmin };
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
