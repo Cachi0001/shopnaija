@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminService } from "@/services/AdminService";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
 import StoreFront from "@/pages/StoreFront";
 
 interface SubdomainRouterProps {
@@ -12,6 +13,16 @@ const SubdomainRouter = ({ children }: SubdomainRouterProps) => {
   try {
     console.log('[SubdomainRouter] Rendering. children:', !!children);
     const { subdomain, loading } = useAuth();
+    const location = useLocation();
+
+    // List of paths that should bypass subdomain routing
+    const bypassPaths = ['/login', '/auth', '/forgot-password', '/reset-password', '/auth/callback', '/dashboard', '/admin'];
+    const shouldBypass = bypassPaths.some(path => location.pathname.startsWith(path));
+
+    // If this is an admin/auth route, let React Router handle it
+    if (shouldBypass) {
+      return <>{children}</>;
+    }
 
     // Query to get admin info for this subdomain
     const { data: adminData, isLoading: adminLoading } = useQuery({
@@ -57,11 +68,11 @@ const SubdomainRouter = ({ children }: SubdomainRouterProps) => {
         );
       }
 
-      // Pass admin data to admin content for branding
+      // Show StoreFront for valid admin subdomains
       return <StoreFront />;
     }
 
-    // If we have superadmin subdomain or no subdomain, show main content
+    // If we have superadmin subdomain or no subdomain, show main content (LandingPage)
     return <>{children}</>;
   } catch (err) {
     console.error('[SubdomainRouter] Error during render:', err);
