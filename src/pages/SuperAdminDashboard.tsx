@@ -20,7 +20,12 @@ import RecentActivity from "@/components/superadmin/RecentActivity";
 import TopPerformingStores from "@/components/superadmin/TopPerformingStores";
 import { CreateAdminDialog } from "@/components/superadmin/CreateAdminDialog";
 
-const SuperAdminDashboard = () => {
+interface SuperAdminDashboardProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}
+
+const SuperAdminDashboard = ({ activeTab, onTabChange }: SuperAdminDashboardProps) => {
   const { user } = useAuth();
   const [isCreateAdminOpen, setIsCreateAdminOpen] = useState(false);
 
@@ -55,27 +60,27 @@ const SuperAdminDashboard = () => {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Overview</span>
+          <TabsTrigger value="overview">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Overview
           </TabsTrigger>
-          <TabsTrigger value="admins" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Admins</span>
+          <TabsTrigger value="admins">
+            <Users className="h-4 w-4 mr-2" />
+            Admins
           </TabsTrigger>
-          <TabsTrigger value="referrals" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Referrals</span>
+          <TabsTrigger value="referrals">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Referrals
           </TabsTrigger>
-          <TabsTrigger value="feedback" className="flex items-center gap-2">
-            <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Feedback</span>
+          <TabsTrigger value="feedback">
+            <MessageCircle className="h-4 w-4 mr-2" />
+            Feedback
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">Alerts</span>
+          <TabsTrigger value="notifications">
+            <Bell className="h-4 w-4 mr-2" />
+            Alerts
           </TabsTrigger>
         </TabsList>
 

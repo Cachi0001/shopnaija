@@ -18,7 +18,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
 import LandingPage from "./pages/LandingPage";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import SuperAdminDashboardPage from "./pages/SuperAdminDashboardPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import StoreFront from "./pages/StoreFront";
 import NotFound from "./pages/NotFound";
@@ -58,9 +58,7 @@ const App = () => {
                     path="/dashboard"
                     element={
                       <ProtectedRoute requiredRole="superadmin">
-                        <DashboardLayout>
-                          <SuperAdminDashboard />
-                        </DashboardLayout>
+                        <SuperAdminDashboardPage />
                       </ProtectedRoute>
                     }
                   />

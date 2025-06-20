@@ -13,7 +13,9 @@ import {
   Bell, 
   Settings, 
   LogOut,
-  Users 
+  Users,
+  BarChart3,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -28,9 +30,11 @@ import { useToast } from "@/hooks/use-toast";
 
 interface DashboardLayoutProps {
   children: ReactNode;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardLayoutProps) => {
   const { user, logout, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,22 +49,86 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     navigate("/login");
   };
 
-  // Navigation items based on user role
-  const navigationItems = isSuperAdmin
-    ? [
-        { name: "Dashboard", path: "/dashboard", icon: Home },
-        { name: "Admins", path: "/admins", icon: Users },
-        { name: "Feedback", path: "/feedback", icon: MessageCircle },
-        { name: "Notifications", path: "/notifications", icon: Bell },
-        { name: "Settings", path: "/settings", icon: Settings }
-      ]
-    : [
-        { name: "Dashboard", path: "/admin/dashboard", icon: Home },
-        { name: "Products", path: "/admin/products", icon: Package },
-        { name: "Orders", path: "/admin/orders", icon: ShoppingBag },
-        { name: "Feedback", path: "/admin/feedback", icon: MessageCircle },
-        { name: "Settings", path: "/admin/settings", icon: Settings }
-      ];
+  const handleNavClick = (tab: string) => {
+    if (onTabChange) {
+      onTabChange(tab);
+    }
+    setSidebarOpen(false);
+  };
+
+  const superAdminNavItems = [
+    { name: "Overview", tab: "overview", icon: BarChart3 },
+    { name: "Admins", tab: "admins", icon: Users },
+    { name: "Referrals", tab: "referrals", icon: TrendingUp },
+    { name: "Feedback", tab: "feedback", icon: MessageCircle },
+    { name: "Alerts", tab: "notifications", icon: Bell },
+  ];
+
+  const adminNavItems = [
+    { name: "Dashboard", path: "/admin/dashboard", icon: Home },
+    { name: "Products", path: "/admin/products", icon: Package },
+    { name: "Orders", path: "/admin/orders", icon: ShoppingBag },
+    { name: "Feedback", path: "/admin/feedback", icon: MessageCircle },
+    { name: "Settings", path: "/admin/settings", icon: Settings }
+  ];
+
+  const navigationItems = isSuperAdmin ? superAdminNavItems : adminNavItems;
+
+  const renderNavItem = (item: any) => {
+    if (isSuperAdmin) {
+      return (
+        <button
+          key={item.name}
+          onClick={() => handleNavClick(item.tab)}
+          className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-md ${
+            activeTab === item.tab ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          <item.icon className="mr-3 h-5 w-5" aria-hidden="true" />
+          {item.name}
+        </button>
+      );
+    }
+    // Regular admin navigation
+    return (
+      <Link
+        key={item.name}
+        to={item.path}
+        className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
+      >
+        <item.icon className="mr-3 h-5 w-5 text-gray-500" aria-hidden="true" />
+        {item.name}
+      </Link>
+    );
+  };
+
+  const renderMobileNavItem = (item: any) => {
+     if (isSuperAdmin) {
+      return (
+        <button
+          key={item.name}
+          onClick={() => handleNavClick(item.tab)}
+          className={`flex items-center w-full px-2 py-2 text-base font-medium rounded-md ${
+            activeTab === item.tab ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          <item.icon className="mr-3 h-5 w-5" aria-hidden="true" />
+          {item.name}
+        </button>
+      );
+    }
+    return (
+       <Link
+          key={item.name}
+          to={item.path}
+          className="flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-gray-100"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <item.icon className="mr-3 h-5 w-5 text-gray-500" aria-hidden="true" />
+          {item.name}
+        </Link>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,17 +165,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           >
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                {user?.logo_url ? (
-                  <img 
-                    src={user.logo_url} 
-                    alt="Logo" 
-                    className="h-8 w-auto"
-                  />
-                ) : (
-                  <span className="text-xl font-bold text-brand-800">
-                    {isSuperAdmin ? "Admin Panel" : user?.website_name || "Store Admin"}
-                  </span>
-                )}
+                <span className="text-xl font-bold text-brand-800">
+                  {isSuperAdmin ? "Admin Panel" : user?.website_name || "Store Admin"}
+                </span>
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -118,17 +178,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </div>
               
               <nav className="space-y-1">
-                {navigationItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className="flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-gray-100"
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="mr-3 h-5 w-5 text-gray-500" aria-hidden="true" />
-                    {item.name}
-                  </Link>
-                ))}
+                {navigationItems.map(renderMobileNavItem)}
                 <button
                   onClick={handleLogout}
                   className="flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-gray-100 w-full text-left"
@@ -146,30 +196,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <div className="hidden lg:flex lg:fixed lg:inset-y-0 lg:z-10">
         <div className="flex flex-col w-64 bg-white border-r border-gray-200">
           <div className="h-16 flex items-center px-6 border-b border-gray-200">
-            {user?.logo_url ? (
-              <img 
-                src={user.logo_url} 
-                alt="Logo" 
-                className="h-8 w-auto"
-              />
-            ) : (
-              <span className="text-xl font-bold text-brand-800">
-                {isSuperAdmin ? "Admin Panel" : user?.website_name || "Store Admin"}
-              </span>
-            )}
+            <span className="text-xl font-bold text-brand-800">
+              {isSuperAdmin ? "Admin Panel" : user?.website_name || "Store Admin"}
+            </span>
           </div>
           <div className="flex-1 flex flex-col overflow-y-auto pt-5 pb-4">
             <nav className="flex-1 px-3 space-y-1">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-                >
-                  <item.icon className="mr-3 h-5 w-5 text-gray-500" aria-hidden="true" />
-                  {item.name}
-                </Link>
-              ))}
+              {navigationItems.map(renderNavItem)}
             </nav>
           </div>
           <div className="p-4 border-t border-gray-200">
