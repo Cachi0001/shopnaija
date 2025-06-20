@@ -16,6 +16,6 @@
       }
     ],
     "scripts": {
-      "build": "vite build"
+      "build": "npm install --production=false && vite build"
     }
   }
