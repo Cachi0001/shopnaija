@@ -99,7 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             authenticatedUser = await AuthService.getCurrentUser(session.user);
           } catch (userError) {
             console.error('Error fetching user profile:', userError);
-            // Continue with basic session info if profile fetch fails
             authenticatedUser = null;
           }
         }
@@ -110,7 +109,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsSuperAdmin(authenticatedUser?.role === 'superadmin');
           setIsAdmin(authenticatedUser?.role === 'admin');
 
-          // Only redirect if we have a valid user and we're on auth pages
           if (authenticatedUser && authenticatedUser.id) {
             const currentPath = location.pathname;
             const targetPath = getDashboardPath(authenticatedUser.role);
@@ -122,7 +120,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error: any) {
         console.error('Auth initialization failed:', error);
         
-        // Only show toast if it's not a configuration issue
         if (!error.message?.includes('placeholder') && !error.message?.includes('Missing')) {
           showToast({ 
             title: "Authentication Error", 
@@ -136,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setIsSuperAdmin(false);
           setIsAdmin(false);
-          // Don't force navigation to login if there's a service error
+          setLoading(false);
         }
       } finally {
         if (mounted) setLoading(false);
@@ -145,7 +142,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initializeAuth();
 
-    // Only set up auth state listener if Supabase is properly configured
     let subscription: any = { unsubscribe: () => {} };
     
     try {
@@ -157,7 +153,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const fetchedUser = await AuthService.getCurrentUser(eventUser);
             setUser(fetchedUser);
             
-            // Safely get session
             try {
               const { data: sessionData } = await supabase.auth.getSession();
               setSession(sessionData.session || null);
@@ -203,35 +198,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Assuming AuthService.signIn throws an error on failure
       await AuthService.signIn(email, password);
-      // State change listener will handle setting user/session and navigation on success
     } catch (error: any) {
       console.error('Login function caught error:', error);
       showToast({ title: "Login Failed", description: error.message || "An unexpected error occurred during login.", variant: "destructive" });
-      // No need to throw here, handled by toast and finally block
     } finally {
-      // Loading is set to false by initializeAuth or onAuthStateChange based on final state
-      // or explicitly setting here if there was an error *before* state change listener fires
-       setLoading(false);
+      setLoading(false);
     }
   };
 
   const logout = async () => {
     setLoading(true);
     try {
-      // Assuming AuthService.signOut throws an error on failure
       await AuthService.signOut();
-      // State change listener will handle clearing user/session and navigation on success
     } catch (error: any) {
       console.error('Logout function caught error:', error);
       showToast({ title: "Logout Failed", description: error.message || "An error occurred during logout.", variant: "destructive" });
-      // No need to throw here, handled by toast and finally block
     } finally {
-      // Loading is set to false by the state change listener on SIGNED_OUT
-       setLoading(false);
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    console.log('[AuthContext] loading:', loading, 'user:', user, 'session:', session, 'subdomain:', subdomain);
+  }, [loading, user, session, subdomain]);
 
   const value = { user, session, subdomain, loading, login, logout, isSuperAdmin, isAdmin };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
