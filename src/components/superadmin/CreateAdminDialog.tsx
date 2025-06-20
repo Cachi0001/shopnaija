@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,17 +8,46 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+// This would ideally come from an API
+const nigerianBanks = [
+    { code: "044", name: "Access Bank" },
+    { code: "063", name: "Access Bank (Diamond)" },
+    { code: "035", name: "Wema Bank" },
+    { code: "057", name: "Zenith Bank" },
+    { code: "058", name: "Guaranty Trust Bank" },
+    { code: "011", name: "First Bank of Nigeria" },
+    { code: "214", name: "First City Monument Bank" },
+    { code: "050", name: "Ecobank Nigeria" },
+    { code: "070", name: "Fidelity Bank" },
+    { code: "082", name: "Keystone Bank" },
+    { code: "014", name: "Mainstreet Bank" },
+    { code: "076", name: "Polaris Bank" },
+    { code: "221", name: "Stanbic IBTC Bank" },
+    { code: "068", name: "Standard Chartered Bank" },
+    { code: "232", name: "Sterling Bank" },
+    { code: "032", name: "Union Bank of Nigeria" },
+    { code: "033", name: "United Bank for Africa" },
+    { code: "215", "name": "Unity Bank" }
+];
 
 const adminSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  phone: z.string().optional(),
+  location: z.string().optional(),
   website_name: z.string().min(2, 'Store name must be at least 2 characters'),
   subdomain: z
     .string()
     .min(3, 'Subdomain must be at least 3 characters')
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Subdomain can only contain lowercase letters, numbers, and hyphens'),
   nin: z.string().length(11, 'NIN must be exactly 11 digits').regex(/^\d{11}$/, 'NIN must be 11 digits'),
+  bank_name: z.string().min(2, 'Bank name is required'),
+  bank_code: z.string(),
+  account_name: z.string().min(2, 'Account name is required'),
+  account_number: z.string().length(10, 'Account number must be 10 digits'),
 });
 
 type AdminFormValues = z.infer<typeof adminSchema>;
@@ -38,11 +67,25 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
       name: '',
       email: '',
       password: '',
+      phone: '',
+      location: '',
       website_name: '',
       subdomain: '',
       nin: '',
+      bank_name: '',
+      bank_code: '',
+      account_name: '',
+      account_number: '',
     },
   });
+  
+  const handleBankChange = (bankName: string) => {
+    const selectedBank = nigerianBanks.find(b => b.name === bankName);
+    if (selectedBank) {
+        form.setValue('bank_name', selectedBank.name);
+        form.setValue('bank_code', selectedBank.code);
+    }
+  };
 
   const onSubmit = async (values: AdminFormValues) => {
     setIsLoading(true);
@@ -70,7 +113,7 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Create New Admin</DialogTitle>
           <DialogDescription>
@@ -78,7 +121,7 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
             <FormField
               control={form.control}
               name="name"
@@ -113,6 +156,32 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
                   <FormLabel>Temporary Password</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+234..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Lagos, Nigeria" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -157,7 +226,61 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
                 </FormItem>
               )}
             />
-            <DialogFooter>
+            <div className="pt-4">
+              <h3 className="text-lg font-medium">Bank Details</h3>
+              <p className="text-sm text-muted-foreground">For store payouts</p>
+            </div>
+            <FormField
+                control={form.control}
+                name="bank_name"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Bank Name</FormLabel>
+                        <Select onValueChange={handleBankChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a bank" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {nigerianBanks.map(bank => (
+                                    <SelectItem key={bank.code} value={bank.name}>
+                                        {bank.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+              control={form.control}
+              name="account_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Account Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="0123456789" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="account_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Account Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="John Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
                 Cancel
               </Button>

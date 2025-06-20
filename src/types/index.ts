@@ -649,10 +649,12 @@ export interface AdminCreateData {
   name: string;
   email: string;
   password: string;
+  role: 'admin';
   phone?: string;
   nin: string;
   subdomain: string;
   website_name: string;
+  location?: string;
   primary_color?: string;
   account_name?: string;
   account_number?: string;
