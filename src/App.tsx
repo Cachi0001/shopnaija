@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 
 // Components
 import ErrorBoundary from "./components/ErrorBoundary";

@@ -72,7 +72,7 @@ const Index = () => {
       
       <div className="mt-16 text-center">
         <p className="text-gray-500 text-sm">
-          © 2023 MultiStore Platform. All rights reserved.
+          © 2025 MultiStore Platform. All rights reserved.
         </p>
       </div>
     </div>
