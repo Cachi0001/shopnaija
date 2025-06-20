@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.ns", "dom"],
+    "strict": true,
+    "types": ["deno"],
+    "allowJs": true,
+    "esModuleInterop": true
+  },
+  "task": {
+    "fmt": "fmt",
+    "lint": "lint",
+    "test": "test"
+  }
+}

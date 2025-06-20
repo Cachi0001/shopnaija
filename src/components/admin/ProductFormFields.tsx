@@ -1,0 +1,1 @@
+// All product form fields are now handled in ProductCreate.tsx

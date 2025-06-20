@@ -1,0 +1,27 @@
+event_message,event_type,function_id,id,level,timestamp
+shutdown,Shutdown,ba3c1d83-579a-48ed-9cce-2bc552475c27,031dcd16-669c-4b19-80a5-8302ecc95f6f,log,1750142538030845
+shutdown,Shutdown,ba3c1d83-579a-48ed-9cce-2bc552475c27,589f1599-da62-4f1c-ad34-4b8b55f0db90,log,1750142537975221
+shutdown,Shutdown,ba3c1d83-579a-48ed-9cce-2bc552475c27,579339c4-69b5-4dd9-adc2-00f9c8fab8dd,log,1750142522050037
+shutdown,Shutdown,ba3c1d83-579a-48ed-9cce-2bc552475c27,56daf8b3-cb39-4642-a5e2-e2f2fd7a0e15,log,1750142521423415
+"Listening on http://localhost:9999/
+",Log,ba3c1d83-579a-48ed-9cce-2bc552475c27,c30a829b-9a42-4f26-b6f2-118b5f670cad,log,1750142337989894
+booted (time: 21ms),Boot,ba3c1d83-579a-48ed-9cce-2bc552475c27,28654da2-7251-4583-b57c-c66046f39fa7,log,1750142337989648
+"Error in process-payment: Error: Some subaccount(s) could not be found
+    at Server.<anonymous> (file:///tmp/user_fn_kpzunjxdvodgprxtqnej_ba3c1d83-579a-48ed-9cce-2bc552475c27_42/source/supabase/functions/process-payment/index.ts:75:13)
+    at eventLoopTick (ext:core/01_core.js:168:7)
+    at async #respond (https://deno.land/std@0.168.0/http/server.ts:221:18)
+",Log,ba3c1d83-579a-48ed-9cce-2bc552475c27,f0c8f456-4a5e-494e-9821-79eab4564d32,error,1750142337927464
+"Listening on http://localhost:9999/
+",Log,ba3c1d83-579a-48ed-9cce-2bc552475c27,dee32f30-0cbb-4c8e-af40-00eac3e9e012,log,1750142337927245
+booted (time: 22ms),Boot,ba3c1d83-579a-48ed-9cce-2bc552475c27,ab7f5027-058c-4c02-9bb3-c533737af0cb,log,1750142337926966
+"Error in process-payment: Error: Some subaccount(s) could not be found
+    at Server.<anonymous> (file:///tmp/user_fn_kpzunjxdvodgprxtqnej_ba3c1d83-579a-48ed-9cce-2bc552475c27_42/source/supabase/functions/process-payment/index.ts:75:13)
+    at eventLoopTick (ext:core/01_core.js:168:7)
+    at async #respond (https://deno.land/std@0.168.0/http/server.ts:221:18)
+",Log,ba3c1d83-579a-48ed-9cce-2bc552475c27,43f69645-aaa7-401b-8239-1c86d32645c4,error,1750142322001182
+"Listening on http://localhost:9999/
+",Log,ba3c1d83-579a-48ed-9cce-2bc552475c27,ad80f695-232b-42d5-96db-ce0b87ce6962,log,1750142322000949
+booted (time: 31ms),Boot,ba3c1d83-579a-48ed-9cce-2bc552475c27,549051b3-d091-4888-af50-f7b5c67eecd2,log,1750142322000709
+"Listening on http://localhost:9999/
+",Log,ba3c1d83-579a-48ed-9cce-2bc552475c27,6736e597-b716-4b05-9537-5bdc16d052f8,log,1750142321375728
+booted (time: 23ms),Boot,ba3c1d83-579a-48ed-9cce-2bc552475c27,60a22eb7-c447-4b6c-8019-3b2e3e6b16bc,log,1750142321375437
