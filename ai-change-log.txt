@@ -3,6 +3,7 @@
 - Added a robust ErrorBoundary component in src/components/ErrorBoundary.tsx to catch and display errors gracefully in the dashboard.
 - Wrapped the main dashboard return block in src/pages/AdminDashboard.tsx with ErrorBoundary to ensure UI errors are caught and shown to the user.
 - Added console.error logging in ErrorBoundary for better error traceability.
+- FIX: Added a default export to src/components/ErrorBoundary.tsx to resolve Vercel build error caused by import/export mismatch (so it can be imported as 'import ErrorBoundary from ...').
 
 [Planned Change - YYYY-MM-DD]
 
