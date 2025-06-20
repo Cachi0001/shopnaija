@@ -152,7 +152,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (eventUser) {
             const fetchedUser = await AuthService.getCurrentUser(eventUser);
             setUser(fetchedUser);
-            
             try {
               const { data: sessionData } = await supabase.auth.getSession();
               setSession(sessionData.session || null);
@@ -160,10 +159,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.error('Error getting session:', sessionError);
               setSession(null);
             }
-            
             setIsSuperAdmin(fetchedUser?.role === 'superadmin');
             setIsAdmin(fetchedUser?.role === 'admin');
-
             if (location.pathname.startsWith('/auth') || location.pathname === '/login') {
               const redirectPath = getDashboardPath(fetchedUser?.role);
               navigateToPath(redirectPath);
@@ -179,9 +176,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } catch (error) {
           console.error('Error in auth state change handler:', error);
+        } finally {
+          if (mounted) setLoading(false);
         }
       });
-      
       subscription = authStateListener.data;
     } catch (error) {
       console.error('Error setting up auth state listener:', error);
