@@ -1,12 +1,12 @@
 {
+    "version": 2,
     "builds": [
       {
-        "src": "index.html",
-        "use": "@vercel/static"
-      },
-      {
-        "src": "*.{js,ts,jsx,tsx}",
-        "use": "@vercel/node"
+        "src": "package.json",
+        "use": "@vercel/node",
+        "config": {
+          "includeFiles": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "public/**", "index.html"]
+        }
       }
     ],
     "routes": [
@@ -14,5 +14,8 @@
         "src": "/(.*)",
         "dest": "/$1"
       }
-    ]
+    ],
+    "scripts": {
+      "build": "vite build"
+    }
   }
