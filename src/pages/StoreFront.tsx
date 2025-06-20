@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query"; // Import useMutation
 import { AdminService } from "@/services/AdminService";
 import { ProductService } from "@/services/ProductService";
-import { supabase } from "@/lib/supabaseClient"; // Ensure this is configured
+import { supabase } from '../integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
