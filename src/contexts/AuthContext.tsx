@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(session);
             setIsSuperAdmin(fetchedUser?.role === 'superadmin');
             setIsAdmin(fetchedUser?.role === 'admin');
-
+            setTimeoutState(false); // Reset timeout on successful login
             // Redirect logic
             if (['/login', '/auth'].includes(location.pathname)) {
               let redirectPath = '/';
@@ -147,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsSuperAdmin(false);
             setIsAdmin(false);
           }
+          setTimeoutState(false);
           setLoading(false);
           if (['/dashboard', '/admin'].some(p => location.pathname.startsWith(p))) {
             navigate('/login', { replace: true });

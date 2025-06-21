@@ -696,9 +696,36 @@ export interface User {
   temp_password?: string | null;
 }
 
-export interface Admin extends User {
-  slug: string; // Slug is required for Admin
-  // ... other admin-specific fields
+export interface Admin {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  role: 'admin' | 'superadmin' | 'customer';
+  subdomain: string | null;
+  slug: string | null;
+  logo_url: string | null;
+  website_name: string | null;
+  primary_color: string | null;
+  account_name: string | null;
+  account_number: string | null;
+  bank_name: string | null;
+  bank_code: string | null;
+  location: string | null;
+  nin: string | null;
+  is_active: boolean | null;
+  referral_code: string | null;
+  referral_discount: number | null;
+  referred_by: string | null;
+  email_verified: boolean | null;
+  phone_verified: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  payment_status: string | null;
+  must_reset_password: boolean | null;
+  is_plan_active: boolean | null;
+  paystack_subaccount_code: string | null;
+  temp_password?: string | null;
 }
 
 export interface AdminCreateData {
@@ -706,7 +733,7 @@ export interface AdminCreateData {
   email: string;
   password: string;
   role: 'admin';
-  slug?: string; // Added slug to creation data
+  slug?: string;
   phone?: string;
   nin: string;
   subdomain?: string;
@@ -719,7 +746,16 @@ export interface AdminCreateData {
   bank_code?: string;
   is_active?: boolean;
   referral_code?: string;
+  referral_discount?: number;
+  referred_by?: string;
+  email_verified?: boolean;
+  phone_verified?: boolean;
+  payment_status?: string;
+  must_reset_password?: boolean;
+  is_plan_active?: boolean;
+  paystack_subaccount_code?: string;
   subaccount_code?: string;
+  temp_password?: string;
 }
 
 export interface Product {
