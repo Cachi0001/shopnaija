@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "routes": [
     {
-      "src": "/.*",
+      "src": "/(.*)",
       "dest": "/index.html"
     },
     {
@@ -18,19 +18,6 @@
     {
       "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "https://growsmallbeez.vercel.app",
-      "permanent": false
-    }
-  ],
-  "wildcard": [
-    {
-      "domain": "*.growsmallbeez.vercel.app",
-      "value": "/index.html"
     }
   ]
 }

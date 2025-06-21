@@ -36,6 +36,8 @@ import {
 } from "lucide-react";
 
 const AdminManagement = () => {
+  // State for showing the just-created admin's slug (used for link display)
+  const [newAdminLink, setNewAdminLink] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
@@ -104,8 +106,29 @@ const AdminManagement = () => {
       bank_code: formData.get('bank_code') as string, // Added bank_code
     };
 
-    createAdminMutation.mutate(adminData);
+    createAdminMutation.mutate(adminData, {
+      onSuccess: (createdAdmin: any) => {
+        // Set the new admin slug for link display
+        if (createdAdmin && createdAdmin.subdomain) {
+          setNewAdminLink(createdAdmin.subdomain);
+        }
+        setIsCreateDialogOpen(false);
+        toast({
+          title: 'Success',
+          description: 'Admin created successfully',
+        });
+        queryClient.invalidateQueries({ queryKey: ['admins'] });
+      },
+      onError: (error: any) => {
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to create admin',
+          variant: 'destructive',
+        });
+      },
+    });
   };
+
 
   const copyReferralLink = (referralCode: string) => {
     const link = `${window.location.origin}/auth?ref=${referralCode}`;
@@ -138,28 +161,46 @@ const AdminManagement = () => {
     <div className="space-y-6">
       {/* Show new admin link if just created */}
       {newAdminLink && (
-        <div className="bg-green-50 border border-green-200 rounded p-4 flex items-center justify-between gap-4">
-          <div>
-            <span className="font-semibold">Admin Login Link:</span>
-            <a href={`/admin/${newAdminLink}`} target="_blank" rel="noopener noreferrer" className="ml-2 underline text-brand-800">
+        <div className="bg-green-50 border border-green-200 rounded p-4 flex flex-col gap-2">
+          {/* Internal admin dashboard login link */}
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">Admin Dashboard Link:</span>
+            <a href="/admin/dashboard" target="_blank" rel="noopener noreferrer" className="underline text-brand-800">
+              {window.location.origin}/admin/dashboard
+            </a>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/admin/dashboard`);
+                toast({ title: "Copied!", description: "Admin dashboard link copied to clipboard" });
+              }}
+            >
+              <Copy className="h-4 w-4 mr-1" /> Copy
+            </Button>
+          </div>
+          {/* Public store link for customers */}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="font-semibold">Public Store Link:</span>
+            <a href={`/admin/${newAdminLink}`} target="_blank" rel="noopener noreferrer" className="underline text-brand-800">
               {window.location.origin}/admin/{newAdminLink}
             </a>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/admin/${newAdminLink}`);
+                toast({ title: "Copied!", description: "Public store link copied to clipboard" });
+              }}
+            >
+              <Copy className="h-4 w-4 mr-1" /> Copy
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              navigator.clipboard.writeText(`${window.location.origin}/admin/${newAdminLink}`);
-              toast({ title: "Copied!", description: "Admin login link copied to clipboard" });
-            }}
-          >
-            <Copy className="h-4 w-4 mr-1" /> Copy Link
-          </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setNewAdminLink(null)}
-            className="text-gray-500"
+            className="text-gray-500 mt-2"
           >
             Dismiss
           </Button>
