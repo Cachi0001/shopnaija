@@ -11,7 +11,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return <LoadingFallback timeout={15000} message="Checking authentication..." />;
   }
 
   if (!user) {

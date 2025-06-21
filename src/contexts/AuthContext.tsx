@@ -1,29 +1,30 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { User } from "@/types"; // Your custom User type
+import { User } from "@/types";
 import { AuthService } from "@/services/AuthService";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Session } from '@supabase/supabase-js'; // Import Supabase Session type
+import { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null; // Use Supabase Session type for session
+  session: Session | null;
   subdomain: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isSuperAdmin: boolean;
   isAdmin: boolean;
+  setSubdomain: (subdomain: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null); // Store session using Supabase Session type
-  const [subdomain, setSubdomain] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Start with loading as true
+  const [session, setSession] = useState<Session | null>(null);
+  const [subdomain, setSubdomainState] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -31,46 +32,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Stable toast function
-  const showToast = useCallback((message: { title: string; description: string; variant?: "destructive" }) => {
-    toast(message);
-  }, [toast]);
+  const setSubdomain = useCallback((newSubdomain: string | null) => {
+    setSubdomainState(newSubdomain);
+  }, []);
 
-  // Stable navigation function
-  const navigateToPath = useCallback((path: string, options?: { replace: boolean }) => {
-    navigate(path, options);
-  }, [navigate]);
-
-  const getDashboardPath = (role: 'superadmin' | 'admin' | 'customer' | string | undefined) => {
-    if (role === 'superadmin') return '/dashboard';
-    if (role === 'admin') return '/admin/dashboard';
-    return '/';
-  };
-
+  // Extract subdomain from hostname
   useEffect(() => {
-    const hostname = window.location.hostname;
-    let potentialSubdomain: string | null = null;
-    if (hostname === 'localhost') {
-      const pathSegments = window.location.pathname.split('/').filter(Boolean);
-      if (pathSegments.length > 0 && !['login', 'auth', 'forgot-password', 'reset-password', 'auth/callback'].includes(pathSegments[0])) {
-        potentialSubdomain = pathSegments[0];
+    const extractSubdomain = () => {
+      const hostname = window.location.hostname;
+      if (hostname.includes('growsmallbeez.vercel.app')) {
+        const parts = hostname.split('.');
+        if (parts.length > 2) {
+          return parts[0];
+        }
       }
-    } else {
-      const parts = hostname.split('.');
-      if (parts.length >= 3 && (parts[1] === 'growthsmallbeez' || parts[1] === 'shopnaija')) {
-        potentialSubdomain = parts[0];
-      }
-    }
-    setSubdomain(potentialSubdomain);
-  }, [location.pathname]);
+      return null;
+    };
 
+    const detectedSubdomain = extractSubdomain();
+    if (detectedSubdomain !== subdomain) {
+      setSubdomain(detectedSubdomain);
+    }
+  }, [location.pathname, subdomain, setSubdomain]);
+
+  // Auth state management
   useEffect(() => {
     setLoading(true);
+    let loadingTimeout: NodeJS.Timeout | null = null;
+    // Timeout for loading state (max 15 seconds)
+    loadingTimeout = setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Authentication Timeout",
+        description: "Authentication took too long. Please try again.",
+        variant: "destructive",
+      });
+      console.error('[AuthProvider] Loading timed out after 15 seconds.');
+    }, 15000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
-        console.log(`[AuthContext] Auth state change event: ${event}`);
-
         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
           if (session) {
             const fetchedUser = await AuthService.getCurrentUser(session.user);
@@ -79,11 +80,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsSuperAdmin(fetchedUser?.role === 'superadmin');
             setIsAdmin(fetchedUser?.role === 'admin');
 
-            // Redirect only if on a public/auth page
-            const publicPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
-            if (publicPaths.includes(location.pathname) || location.pathname.startsWith('/auth')) {
-                const redirectPath = getDashboardPath(fetchedUser?.role);
-                navigateToPath(redirectPath, { replace: true });
+            // Redirect logic
+            if (['/login', '/auth'].includes(location.pathname)) {
+              const redirectPath = fetchedUser?.role === 'superadmin' 
+                ? '/dashboard' 
+                : fetchedUser?.role === 'admin' 
+                  ? '/admin/dashboard' 
+                  : '/';
+              navigate(redirectPath, { replace: true });
             }
           }
         } else if (event === 'SIGNED_OUT') {
@@ -91,16 +95,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setIsSuperAdmin(false);
           setIsAdmin(false);
-          const protectedPaths = ['/dashboard', '/admin/dashboard'];
-          if (protectedPaths.some(p => location.pathname.startsWith(p))) {
-            navigateToPath('/login', { replace: true });
+          // Clear all Supabase session data (localStorage/sessionStorage)
+          try {
+            localStorage.removeItem('supabase.auth.token');
+            sessionStorage.removeItem('supabase.auth.token');
+          } catch (e) {
+            // Ignore if not present
+          }
+          if (["/dashboard", "/admin"].some(p => location.pathname.startsWith(p))) {
+            navigate("/login", { replace: true });
           }
         }
       } catch (error) {
-        console.error('Error handling auth state change:', error);
-        showToast({
+        console.error('Auth state change error:', error);
+        toast({
           title: "Authentication Error",
-          description: "An error occurred. Please try refreshing.",
+          description: "Please try again",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+        if (loadingTimeout) clearTimeout(loadingTimeout);
+      }
+    });
+
+    // Initial session check
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const user = await AuthService.getCurrentUser(session.user);
+          setUser(user);
+          setSession(session);
+          setIsSuperAdmin(user?.role === 'superadmin');
+          setIsAdmin(user?.role === 'admin');
+        } else {
+          setUser(null);
+          setSession(null);
+          setIsSuperAdmin(false);
+          setIsAdmin(false);
+        }
+      } catch (err) {
+        toast({
+          title: "Session Error",
+          description: "Could not restore session. Please log in again.",
           variant: "destructive",
         });
         setUser(null);
@@ -109,79 +147,106 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAdmin(false);
       } finally {
         setLoading(false);
+        if (loadingTimeout) clearTimeout(loadingTimeout);
       }
-    });
-
-    // Initial check for session, in case onAuthStateChange doesn't fire immediately
-    const checkInitialSession = async () => {
-        try {
-            const { data: { session: initialSession } } = await supabase.auth.getSession();
-            if (!session && initialSession) { // If no session is set yet
-                const fetchedUser = await AuthService.getCurrentUser(initialSession.user);
-                setUser(fetchedUser);
-                setSession(initialSession);
-                setIsSuperAdmin(fetchedUser?.role === 'superadmin');
-                setIsAdmin(fetchedUser?.role === 'admin');
-            }
-        } catch (error) {
-            console.error('Error in initial session check:', error);
-        } finally {
-            // This is crucial for the very first load
-            if (loading) setLoading(false);
-        }
     };
-    
-    checkInitialSession();
+
+    checkSession();
 
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
+      subscription?.unsubscribe();
+      if (loadingTimeout) clearTimeout(loadingTimeout);
     };
-  }, [navigateToPath, showToast, location.pathname]);
+  }, [navigate, toast, location.pathname]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
+    let loadingTimeout: NodeJS.Timeout | null = null;
+    // 15s timeout for login
+    loadingTimeout = setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Login Timeout",
+        description: "Login took too long. Please try again.",
+        variant: "destructive",
+      });
+      console.error('[AuthProvider] Login timed out after 15 seconds.');
+    }, 15000);
     try {
       await AuthService.signIn(email, password);
-      // onAuthStateChange will handle navigation and state updates
     } catch (error: any) {
-      console.error('Login function error:', error);
-      showToast({ title: "Login Failed", description: error.message || "Invalid credentials.", variant: "destructive" });
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
       setLoading(false);
+      if (loadingTimeout) clearTimeout(loadingTimeout);
     }
   };
+
 
   const logout = async () => {
     setLoading(true);
+    let loadingTimeout: NodeJS.Timeout | null = null;
+    // 15s timeout for logout
+    loadingTimeout = setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Logout Timeout",
+        description: "Logout took too long. Please try again.",
+        variant: "destructive",
+      });
+      console.error('[AuthProvider] Logout timed out after 15 seconds.');
+    }, 15000);
     try {
       await AuthService.signOut();
-      // onAuthStateChange will handle state updates and navigation
-    } catch (error: any) {
-      console.error('Logout function error:', error);
-      showToast({ title: "Logout Failed", description: error.message, variant: "destructive" });
-    } finally {
-      // Set user/session to null immediately for faster UI response
+      // Clear all Supabase session data (localStorage/sessionStorage)
+      try {
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.removeItem('supabase.auth.token');
+      } catch (e) {
+        // Ignore if not present
+      }
       setUser(null);
       setSession(null);
+      setIsSuperAdmin(false);
+      setIsAdmin(false);
+      navigate('/login', { replace: true });
+    } catch (error: any) {
+      toast({
+        title: "Logout Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-      navigateToPath('/login', { replace: true });
+      if (loadingTimeout) clearTimeout(loadingTimeout);
     }
   };
 
-  useEffect(() => {
-    console.log(`[AuthContext] State Update: loading=${loading}, user=${!!user}, session=${!!session}, isAdmin=${isAdmin}, isSuperAdmin=${isSuperAdmin}`);
-  }, [loading, user, session, isAdmin, isSuperAdmin]);
 
-  const value = { user, session, subdomain, loading, login, logout, isSuperAdmin, isAdmin };
+  const value = {
+    user,
+    session,
+    subdomain,
+    loading,
+    login,
+    logout,
+    isSuperAdmin,
+    isAdmin,
+    setSubdomain
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }

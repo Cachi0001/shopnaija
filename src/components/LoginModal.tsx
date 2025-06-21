@@ -25,7 +25,17 @@ const LoginModal = ({ children }: LoginModalProps) => {
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+    let loadingTimeout: NodeJS.Timeout | null = null;
+    // 15s timeout for login
+    loadingTimeout = setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Login Timeout",
+        description: "Login took too long. Please try again.",
+        variant: "destructive",
+      });
+      console.error('[LoginModal] Login timed out after 15 seconds.');
+    }, 15000);
     try {
       const isEmail = emailOrPhone.includes('@');
       

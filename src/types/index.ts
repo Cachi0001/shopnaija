@@ -435,6 +435,7 @@ export type Database = {
           referred_by: string | null
           role: Database["public"]["Enums"]["user_role"]
           subdomain: string | null
+          slug: string | null // Added slug field
           temp_password: string | null
           updated_at: string | null
           website_name: string | null
@@ -465,6 +466,7 @@ export type Database = {
           referred_by?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           subdomain?: string | null
+          slug?: string | null // Added slug field
           temp_password?: string | null
           updated_at?: string | null
           website_name?: string | null
@@ -495,6 +497,7 @@ export type Database = {
           referred_by?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           subdomain?: string | null
+          slug?: string | null // Added slug field
           temp_password?: string | null
           updated_at?: string | null
           website_name?: string | null
@@ -533,20 +536,20 @@ export type Database = {
     }
     Enums: {
       notification_type:
-        | "sale_notification",
-        | "admin_created",
-        | "admin_deactivated",
-        | "feedback_received",
-        | "order_failed",
-        | "payment_confirmed",
-      payment_status: "pending" | "completed" | "failed",
+        | "sale_notification"
+        | "admin_created"
+        | "admin_deactivated"
+        | "feedback_received"
+        | "order_failed"
+        | "payment_confirmed"
+      payment_status: "pending" | "completed" | "failed"
       tracking_status:
-        | "processing",
-        | "shipped",
-        | "out for delivery",
-        | "delivered",
-        | "cancelled",
-      user_role: "superadmin" | "admin" | "customer",
+        | "processing"
+        | "shipped"
+        | "out for delivery"
+        | "delivered"
+        | "cancelled"
+      user_role: "superadmin" | "admin" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -651,7 +654,6 @@ export type CompositeTypes<
   ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
   : never
 
-
 // Custom application-specific types
 export interface CartItem {
   product_id: string;
@@ -669,6 +671,7 @@ export interface User {
   phone: string | null;
   role: 'superadmin' | 'admin' | 'customer';
   subdomain: string | null;
+  slug: string | null; // Added slug field
   logo_url: string | null;
   website_name: string | null;
   primary_color: string | null;
@@ -693,14 +696,20 @@ export interface User {
   temp_password?: string | null;
 }
 
+export interface Admin extends User {
+  slug: string; // Slug is required for Admin
+  // ... other admin-specific fields
+}
+
 export interface AdminCreateData {
   name: string;
   email: string;
   password: string;
   role: 'admin';
+  slug: string; // Added slug to creation data
   phone?: string;
   nin: string;
-  subdomain: string;
+  subdomain?: string;
   website_name: string;
   location?: string;
   primary_color?: string;
@@ -749,7 +758,7 @@ export interface Order {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
-  order_details: any; // Consider creating a more specific type for order_details
+  order_details: any;
   total_amount: number;
   payment_status: 'pending' | 'completed' | 'failed';
   payment_date?: string;

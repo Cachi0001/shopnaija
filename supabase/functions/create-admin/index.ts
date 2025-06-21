@@ -17,7 +17,7 @@ serve(async (req) => {
     console.log('=== CREATE ADMIN EDGE FUNCTION STARTED ===');
     const requestBody = await req.json();
     console.log('Request body received:', requestBody);
-    const {
+    const { 
       email, password, name, nin, subdomain, website_name, account_name, account_number, bank_name, bank_code, phone, paystack_subaccount_code, primary_color, referral_code, location
     } = requestBody;
     // Check environment variables
@@ -59,19 +59,19 @@ serve(async (req) => {
       const paystackSecretKey = Deno.env.get("PAYSTACK_SECRET_KEY");
       if (!paystackSecretKey) throw new Error("PAYSTACK_SECRET_KEY is not set for automatic subaccount creation.");
       const paystackResponse = await fetch('https://api.paystack.co/subaccount', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${paystackSecretKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${paystackSecretKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
           business_name: website_name,
           bank_code: bank_code,
           account_number: account_number,
-          account_name: account_name,
+                    account_name: account_name,
           percentage_charge: 1.5
-        })
-      });
+                })
+            });
       const paystackData = await paystackResponse.json();
       if (!paystackData.status) throw new Error(`Paystack error: ${paystackData.message}`);
       finalSubaccountCode = paystackData.data.subaccount_code;
@@ -81,7 +81,7 @@ serve(async (req) => {
       email: email,
       password: tempPassword,
       email_confirm: true,
-      user_metadata: {
+      user_metadata: { 
         name: name,
         role: 'admin',
         subdomain: subdomain,
@@ -99,14 +99,14 @@ serve(async (req) => {
     const { data: newAdmin, error: insertError } = await supabaseAdmin.from('users').insert({
       id: authUser.user.id,
       email: email,
-      name: name,
+        name: name,
       role: 'admin',
       nin: nin || null,
       subdomain: subdomain,
       website_name: website_name,
-      account_name: account_name || null,
-      account_number: account_number || null,
-      bank_name: bank_name || null,
+        account_name: account_name || null,
+        account_number: account_number || null,
+        bank_name: bank_name || null,
       bank_code: bank_code || null,
       phone: phone || null,
       payment_status: 'pending',
@@ -114,7 +114,7 @@ serve(async (req) => {
       must_reset_password: true,
       temp_password: tempPassword,
       primary_color: primary_color || '#00A862',
-      email_verified: true,
+        email_verified: true,
       paystack_subaccount_code: finalSubaccountCode || null,
       referral_code: referral_code || null,
       location: location || null,
@@ -165,18 +165,18 @@ serve(async (req) => {
     // Send notification to superadmin
     try {
       await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-        method: 'POST',
+      method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${supabaseServiceRoleKey}`
         },
-        body: JSON.stringify({
-          recipient_id: 'superadmin',
-          title: 'New Admin Created',
-          body: `Admin ${name} has been registered`,
-          data: { type: 'admin_created' }
-        })
-      });
+      body: JSON.stringify({
+        recipient_id: 'superadmin', 
+        title: 'New Admin Created',
+        body: `Admin ${name} has been registered`,
+        data: { type: 'admin_created' }
+      })
+    });
     } catch (notificationError) {
       console.warn('Notification sending failed:', notificationError);
     }

@@ -1,8 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { AuthService } from "./AuthService";
 import { AdminCreateData } from "@/types/index"; 
-
 
 export class AdminService {
   static async createAdmin(adminData: AdminCreateData) {
@@ -14,21 +12,18 @@ export class AdminService {
       });
 
       if (error) {
-        // This handles network errors or if the function itself crashes.
         throw error;
       }
 
-      // The edge function might return its own error message inside the data object.
       if (data && data.error) {
         throw new Error(data.error);
       }
 
       console.log("Admin created successfully via edge function:", data);
-      return data; // Return the data sent back from the edge function.
+      return data;
 
     } catch (error: any) {
       console.error('Error in AdminService.createAdmin:', error);
-      // Re-throw the error so the UI can catch it and display a message.
       throw new Error(error.message || 'An unexpected error occurred.');
     }
   }
@@ -50,14 +45,14 @@ export class AdminService {
       .select('*')
       .eq('id', id)
       .eq('role', 'admin')
-      .maybeSingle(); // Use maybeSingle to handle cases where admin doesn't exist
+      .maybeSingle();
 
     if (error) {
       console.error(`Error fetching admin with id ${id}:`, error);
       throw error;
     }
     
-    return data; // Will return null if admin not found
+    return data;
   }
 
   static async getAdminBySubdomain(subdomain: string) {
@@ -66,14 +61,31 @@ export class AdminService {
       .select('*')
       .eq('subdomain', subdomain)
       .eq('role', 'admin')
-      .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
+      .maybeSingle();
 
     if (error) {
       console.error(`Error fetching admin for subdomain ${subdomain}:`, error);
       throw error;
     }
     
-    return data; // Will return null if no admin found, which is what we want
+    return data;
+  }
+
+  // NEW: Get admin by slug
+  static async getAdminBySlug(slug: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('slug', slug)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (error) {
+      console.error(`Error fetching admin for slug ${slug}:`, error);
+      throw error;
+    }
+    
+    return data;
   }
 
   static async updateAdmin(id: string, updates: Partial<AdminCreateData & { is_active: boolean; referral_code: string }>) {

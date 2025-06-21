@@ -50,6 +50,45 @@ const Auth = () => {
     return ninRegex.test(ninValue);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    let loadingTimeout: NodeJS.Timeout | null = null;
+    // 15s timeout for login/signup
+    loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "Login/Signup Timeout",
+        description: "Authentication took too long. Please try again.",
+        variant: "destructive",
+      });
+      console.error('[AuthPage] Login/Signup timed out after 15 seconds.');
+    }, 15000);
+    try {
+      await login(email, password);
+      toast({
+        title: "Login Successful",
+        description: "Redirecting to your dashboard...",
+      });
+      clearTimeout(timeout);
+
+      // Force navigation after login
+      setTimeout(() => {
+        if (isSuperAdmin) {
+          navigate("/dashboard", { replace: true });
+        } else if (isAdmin) {
+          navigate("/admin/dashboard", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      }, 1000); // 1 second delay for UX
+    } catch (error) {
+      clearTimeout(timeout);
+      console.error("Login error:", error);
+      setIsLoading(false);
+    }
+  };
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -323,7 +362,11 @@ const Auth = () => {
                         className="w-full bg-green-600 hover:bg-green-700"
                         disabled={isLoading}
                       >
-                        {isLoading ? (<><LoadingFallback message="" /><span className="ml-2">Logging in...</span></>) : "Login with Email"}
+                        {isLoading ? (
+                          <LoadingFallback timeout={15000} message="Processing..." />
+                        ) : (
+                          <span className="ml-2">Login with Email</span>
+                        )}
                       </Button>
                     </form>
                   </TabsContent>

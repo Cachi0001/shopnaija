@@ -10,12 +10,12 @@ max_rows = 1000
 
 [auth]
 enabled = true
-port = 54324
+# port = 54324
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
-refresh_token_rotation_enabled = true
-security_update_password_require_reauthentication = false
+# refresh_token_rotation_enabled = true
+# security_update_password_require_reauthentication = false
 
 [auth.email]
 enable_signup = true
@@ -27,13 +27,13 @@ port = 54322
 
 [storage]
 enabled = true
-port = 54323
+# port = 54323
 file_size_limit = "50MiB"
 image_transformation = {enabled = true}
 
 [edge_runtime]
 enabled = true
-port = 54325
+# port = 54325
 
 [functions.handle-social-login]
 verify_jwt = false
