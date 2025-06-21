@@ -93,21 +93,21 @@ const AdminManagement = () => {
     const adminData: AdminCreateData = {
       name: formData.get('name') as string,
       email: formData.get('email') as string,
-      location: formData.get('location') as string,
       password: formData.get('password') as string,
-      phone: formData.get('phone') as string,
+      phone: formData.get('phone') as string || undefined,
       nin: formData.get('nin') as string,
       subdomain: formData.get('subdomain') as string,
       website_name: formData.get('website_name') as string,
       primary_color: formData.get('primary_color') as string || '#1a56db',
-      account_name: formData.get('account_name') as string,
-      account_number: formData.get('account_number') as string,
-      bank_name: formData.get('bank_name') as string,
-      bank_code: formData.get('bank_code') as string,
+      account_name: formData.get('account_name') as string || undefined,
+      account_number: formData.get('account_number') as string || undefined,
+      bank_name: formData.get('bank_name') as string || undefined,
+      bank_code: formData.get('bank_code') as string || undefined,
+      location: formData.get('location') as string || undefined,
       is_active: true,
       referral_code: formData.get('referral_code') as string,
       subaccount_code: formData.get('subaccount_code') as string,
-    role: 'admin',
+      role: 'admin',
     };
 
     createAdminMutation.mutate(adminData, {

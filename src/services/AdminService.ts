@@ -105,8 +105,14 @@ export class AdminService {
       console.error(`Error fetching admin for slug ${slug}:`, error);
       throw error;
     }
-    
-    return data;
+    if (!data) return null;
+    return {
+      ...(data as any),
+      slug: (data as any)?.slug ?? '',
+      payment_status: (data as any)?.payment_status ?? '',
+      must_reset_password: (data as any)?.must_reset_password ?? false,
+      is_plan_active: (data as any)?.is_plan_active ?? false,
+    };
   }
 
   static async updateAdmin(id: string, updates: Partial<AdminCreateData>) {
