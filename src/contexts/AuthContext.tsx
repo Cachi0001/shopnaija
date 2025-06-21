@@ -75,8 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               if (fetchedUser?.role === 'superadmin') {
                 redirectPath = '/dashboard';
               } else if (fetchedUser?.role === 'admin') {
-                // Use slug/subdomain as the admin dashboard path
-                redirectPath = fetchedUser.subdomain ? `/admin/${fetchedUser.subdomain}` : '/admin-dashboard';
+                redirectPath = '/admin/dashboard';
               }
               navigate(redirectPath, { replace: true });
             }

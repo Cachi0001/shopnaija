@@ -58,7 +58,7 @@ const LoginModal = ({ children }: LoginModalProps) => {
         setTimeout(() => {
           if (user.role === 'superadmin') {
             navigate("/dashboard");
-          } else if (user.role === 'admin' && user.subdomain) {
+          } else if (user.role === 'admin') {
             navigate("/admin/dashboard");
           } else {
             toast({
