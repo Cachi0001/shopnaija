@@ -313,12 +313,25 @@ export type Database = {
           id: string
           image_public_id: string | null
           image_url: string | null
-          location: string | null
           paystack_fee: number | null
           price: number
           superadmin_fee: number | null
           title: string
           updated_at: string | null
+          units_available: number
+          original_price: number
+          name: string
+          category: string
+          agerange: string | null
+          size: string | null
+          color: string | null
+          skintype: string | null
+          material: string | null
+          location_state: string
+          location_address: string
+          lga: string
+          locationstate: string | null
+          locationaddress: string | null
         }
         Insert: {
           adjusted_price?: number | null
@@ -329,12 +342,25 @@ export type Database = {
           id?: string
           image_public_id?: string | null
           image_url?: string | null
-          location?: string | null
           paystack_fee?: number | null
           price: number
           superadmin_fee?: number | null
           title: string
           updated_at?: string | null
+          units_available?: number
+          original_price?: number
+          name: string
+          category: string
+          agerange?: string | null
+          size?: string | null
+          color?: string | null
+          skintype?: string | null
+          material?: string | null
+          location_state?: string
+          location_address?: string
+          lga?: string
+          locationstate?: string | null
+          locationaddress?: string | null
         }
         Update: {
           adjusted_price?: number | null
@@ -345,12 +371,25 @@ export type Database = {
           id?: string
           image_public_id?: string | null
           image_url?: string | null
-          location?: string | null
           paystack_fee?: number | null
           price?: number
           superadmin_fee?: number | null
           title?: string
           updated_at?: string | null
+          units_available?: number
+          original_price?: number
+          name?: string
+          category?: string
+          agerange?: string | null
+          size?: string | null
+          color?: string | null
+          skintype?: string | null
+          material?: string | null
+          location_state?: string
+          location_address?: string
+          lga?: string
+          locationstate?: string | null
+          locationaddress?: string | null
         }
         Relationships: [
           {
@@ -374,17 +413,20 @@ export type Database = {
           account_name: string | null
           account_number: string | null
           bank_name: string | null
-          bank_code: string | null;
-          paystack_subaccount_code: string | null;
+          bank_code: string | null
           created_at: string | null
           email: string
           email_verified: boolean | null
           id: string
           is_active: boolean | null
+          is_plan_active: boolean | null
           location: string | null
           logo_url: string | null
+          must_reset_password: boolean | null
           name: string
           nin: string | null
+          payment_status: string | null
+          paystack_subaccount_code: string | null
           phone: string | null
           phone_verified: boolean | null
           primary_color: string | null
@@ -393,6 +435,7 @@ export type Database = {
           referred_by: string | null
           role: Database["public"]["Enums"]["user_role"]
           subdomain: string | null
+          temp_password: string | null
           updated_at: string | null
           website_name: string | null
         }
@@ -400,17 +443,20 @@ export type Database = {
           account_name?: string | null
           account_number?: string | null
           bank_name?: string | null
-          bank_code?: string | null;
-          paystack_subaccount_code?: string | null;
+          bank_code?: string | null
           created_at?: string | null
           email: string
           email_verified?: boolean | null
           id?: string
           is_active?: boolean | null
+          is_plan_active?: boolean | null
           location?: string | null
           logo_url?: string | null
+          must_reset_password?: boolean | null
           name: string
           nin?: string | null
+          payment_status?: string | null
+          paystack_subaccount_code?: string | null
           phone?: string | null
           phone_verified?: boolean | null
           primary_color?: string | null
@@ -419,6 +465,7 @@ export type Database = {
           referred_by?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           subdomain?: string | null
+          temp_password?: string | null
           updated_at?: string | null
           website_name?: string | null
         }
@@ -426,17 +473,20 @@ export type Database = {
           account_name?: string | null
           account_number?: string | null
           bank_name?: string | null
-          bank_code?: string | null;
-          paystack_subaccount_code?: string | null;
+          bank_code?: string | null
           created_at?: string | null
           email?: string
           email_verified?: boolean | null
           id?: string
           is_active?: boolean | null
+          is_plan_active?: boolean | null
           location?: string | null
           logo_url?: string | null
+          must_reset_password?: boolean | null
           name?: string
           nin?: string | null
+          payment_status?: string | null
+          paystack_subaccount_code?: string | null
           phone?: string | null
           phone_verified?: boolean | null
           primary_color?: string | null
@@ -445,6 +495,7 @@ export type Database = {
           referred_by?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           subdomain?: string | null
+          temp_password?: string | null
           updated_at?: string | null
           website_name?: string | null
         }
@@ -503,99 +554,91 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+      PublicSchema["Views"])
+  ? (PublicSchema["Tables"] &
+      PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
     : never
+  : never
 
 export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+  ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+      Insert: infer I
+    }
+    ? I
     : never
+  : never
 
 export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+  ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+      Update: infer U
+    }
+    ? U
     : never
+  : never
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+  ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+  : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof PublicSchema["CompositeTypes"]
     | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof Database
@@ -604,10 +647,12 @@ export type CompositeTypes<
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
   ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOroptions]
-    : never
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+  ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never
 
+
+// Custom application-specific types
 export interface CartItem {
   product_id: string;
   quantity: number;
@@ -621,28 +666,31 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password?: string;
-  phone?: string | null;
+  phone: string | null;
   role: 'superadmin' | 'admin' | 'customer';
-  subdomain?: string;
-  logo_url?: string;
-  website_name?: string;
-  primary_color?: string;
-  account_name?: string | null;
-  account_number?: string | null;
-  bank_name?: string | null;
-  bank_code?: string | null;
-  paystack_subaccount_code?: string | null;
-  location?: string | null;
-  nin?: string | null;
-  is_active: boolean;
-  referral_code?: string | null;
-  referral_discount?: number | null;
-  referred_by?: string | null;
-  email_verified?: boolean;
-  phone_verified?: boolean;
-  created_at?: string;
-  updated_at?: string;
+  subdomain: string | null;
+  logo_url: string | null;
+  website_name: string | null;
+  primary_color: string | null;
+  account_name: string | null;
+  account_number: string | null;
+  bank_name: string | null;
+  bank_code: string | null;
+  location: string | null;
+  nin: string | null;
+  is_active: boolean | null;
+  referral_code: string | null;
+  referral_discount: number | null;
+  referred_by: string | null;
+  email_verified: boolean | null;
+  phone_verified: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  payment_status: string | null;
+  must_reset_password: boolean | null;
+  is_plan_active: boolean | null;
+  paystack_subaccount_code: string | null;
+  temp_password?: string | null;
 }
 
 export interface AdminCreateData {
@@ -667,19 +715,31 @@ export interface AdminCreateData {
 export interface Product {
   id: string;
   admin_id: string;
-  category_id?: string;
+  category_id: string | null;
   title: string;
-  description?: string;
+  name: string;
+  description: string | null;
   price: number;
-  adjusted_price?: number;
-  paystack_fee?: number;
-  superadmin_fee?: number;
-  image_url?: string;
-  image_public_id?: string;
-  location?: string;
+  original_price: number;
+  adjusted_price: number | null;
+  paystack_fee: number | null;
+  superadmin_fee: number | null;
+  image_url: string | null;
+  image_public_id: string | null;
+  units_available: number;
+  category: string;
+  agerange: string | null;
+  size: string | null;
+  color: string | null;
+  skintype: string | null;
+  material: string | null;
+  location_state: string;
+  location_address: string;
+  lga: string;
+  locationstate: string | null;
+  locationaddress: string | null;
   created_at?: string;
   updated_at?: string;
-  original_price?: number; // Added original_price to Product interface
 }
 
 export interface Order {
@@ -742,27 +802,3 @@ export interface Category {
   created_at?: string;
   updated_at?: string;
 }
-
-export const Constants = {
-  public: {
-    Enums: {
-      notification_type: [
-        "sale_notification",
-        "admin_created",
-        "admin_deactivated",
-        "feedback_received",
-        "order_failed",
-        "payment_confirmed",
-      ],
-      payment_status: ["pending", "completed", "failed"],
-      tracking_status: [
-        "processing",
-        "shipped",
-        "out for delivery",
-        "delivered",
-        "cancelled",
-      ],
-      user_role: ["superadmin", "admin", "customer"],
-    },
-  },
-} as const
