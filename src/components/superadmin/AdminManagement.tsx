@@ -33,6 +33,7 @@ import {
   Eye,
   Copy
 } from "lucide-react";
+import { CreateAdminDialog } from "./CreateAdminDialog";
 
 const AdminManagement = () => {
   // State for showing the just-created admin's slug (used for link display)
