@@ -16,11 +16,7 @@
     }
   ],
   "redirects": [
-    {
-      "source": "/",
-      "destination": "https://growsmallbeez.vercel.app",
-      "permanent": false
-    }
+
   ],
   "headers": [
     {
