@@ -44,10 +44,13 @@ const adminSchema = z.object({
     .min(3, 'Subdomain must be at least 3 characters')
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Subdomain can only contain lowercase letters, numbers, and hyphens'),
   nin: z.string().length(11, 'NIN must be exactly 11 digits').regex(/^\d{11}$/, 'NIN must be 11 digits'),
-  bank_name: z.string().min(2, 'Bank name is required'),
-  bank_code: z.string(),
-  account_name: z.string().min(2, 'Account name is required'),
-  account_number: z.string().length(10, 'Account number must be 10 digits'),
+  bank_name: z.string().optional(),
+  bank_code: z.string().optional(),
+  account_name: z.string().optional(),
+  account_number: z.string().optional(),
+  paystack_subaccount_code: z.string().optional(),
+  primary_color: z.string().optional(),
+  referral_code: z.string().optional(),
 });
 
 type AdminFormValues = z.infer<typeof adminSchema>;
@@ -76,6 +79,9 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
       bank_code: '',
       account_name: '',
       account_number: '',
+      paystack_subaccount_code: '',
+      primary_color: '',
+      referral_code: '',
     },
   });
   
@@ -227,8 +233,8 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
               )}
             />
             <div className="pt-4">
-              <h3 className="text-lg font-medium">Bank Details</h3>
-              <p className="text-sm text-muted-foreground">For store payouts</p>
+              <h3 className="text-lg font-medium">Bank Details (Optional)</h3>
+              <p className="text-sm text-muted-foreground">For store payouts - can be added later</p>
             </div>
             <FormField
                 control={form.control}
@@ -239,7 +245,7 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
                         <Select onValueChange={handleBankChange} defaultValue={field.value}>
                             <FormControl>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select a bank" />
+                                    <SelectValue placeholder="Select a bank (optional)" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -261,7 +267,7 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
                 <FormItem>
                   <FormLabel>Account Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="0123456789" {...field} />
+                    <Input placeholder="0123456789 (optional)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -274,7 +280,46 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
                 <FormItem>
                   <FormLabel>Account Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="John Doe (optional)" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="paystack_subaccount_code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Paystack Subaccount Code (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="ACCT_xxx (leave empty for auto-creation)" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="primary_color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Primary Color (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="#3B82F6" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="referral_code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Referral Code (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="REF123" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
