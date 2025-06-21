@@ -28,9 +28,7 @@ const AuthCallback = () => {
       if (user.role === 'superadmin') {
         redirectPath = "/dashboard";
       } else if (user.role === 'admin') {
-        redirectPath = subdomain 
-          ? `https://${subdomain}.growsmallbeez.vercel.app/admin/dashboard`
-          : "/admin/dashboard";
+        redirectPath = user.subdomain ? `/admin/${user.subdomain}` : "/admin-dashboard";
       }
 
       toast({

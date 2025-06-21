@@ -136,6 +136,35 @@ const AdminManagement = () => {
 
   return (
     <div className="space-y-6">
+      {/* Show new admin link if just created */}
+      {newAdminLink && (
+        <div className="bg-green-50 border border-green-200 rounded p-4 flex items-center justify-between gap-4">
+          <div>
+            <span className="font-semibold">Admin Login Link:</span>
+            <a href={`/admin/${newAdminLink}`} target="_blank" rel="noopener noreferrer" className="ml-2 underline text-brand-800">
+              {window.location.origin}/admin/{newAdminLink}
+            </a>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/admin/${newAdminLink}`);
+              toast({ title: "Copied!", description: "Admin login link copied to clipboard" });
+            }}
+          >
+            <Copy className="h-4 w-4 mr-1" /> Copy Link
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setNewAdminLink(null)}
+            className="text-gray-500"
+          >
+            Dismiss
+          </Button>
+        </div>
+      )}
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="relative flex-1 max-w-sm">
@@ -279,9 +308,33 @@ const AdminManagement = () => {
                     <TableCell>{admin.email}</TableCell>
                     <TableCell>
                       {admin.subdomain && (
-                        <Badge variant="outline">
-                          {admin.subdomain}.growthsmallbeez.com
-                        </Badge>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant="outline">
+                            /admin/{admin.subdomain}
+                          </Badge>
+                          <div className="flex items-center gap-1 mt-1">
+                            <a
+                              href={`/admin/${admin.subdomain}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs underline text-brand-800"
+                            >
+                              Admin Login Link
+                            </a>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="p-1"
+                              title="Copy admin login link"
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/admin/${admin.subdomain}`);
+                                toast({ title: "Copied!", description: "Admin login link copied to clipboard" });
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
                       )}
                     </TableCell>
                     <TableCell>
@@ -351,41 +404,64 @@ const AdminManagement = () => {
               <DialogDescription>Admin Details</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <strong>Email:</strong> {selectedAdmin.email}
-                </div>
-                <div>
-                  <strong>Phone:</strong> {selectedAdmin.phone || 'N/A'}
-                </div>
-                <div>
-                  <strong>NIN:</strong> {selectedAdmin.nin || 'N/A'}
-                </div>
-                <div>
-                  <strong>Website:</strong> {selectedAdmin.website_name || 'N/A'}
-                </div>
-                <div>
-                  <strong>Account Name:</strong> {selectedAdmin.account_name || 'N/A'}
-                </div>
-                <div>
-                  <strong>Account Number:</strong> {selectedAdmin.account_number || 'N/A'}
-                </div>
-                <div>
-                  <strong>Bank:</strong> {selectedAdmin.bank_name || 'N/A'}
-                </div>
-                <div>
-                   {/* Display Bank Code if available */}
-                   <strong>Bank Code:</strong> {selectedAdmin.bank_code || 'N/A'}
-                </div>
-                 <div>
-                   {/* Display Paystack Subaccount Code if available */}
-                   <strong>Paystack Subaccount:</strong> {selectedAdmin.paystack_subaccount_code || 'N/A'}
-                </div>
-                <div>
-                  <strong>Referral Discount:</strong> ₦{selectedAdmin.referral_discount || 0}
-                </div>
-              </div>
-            </div>
+  <div className="grid grid-cols-2 gap-4 text-sm">
+    <div>
+      <strong>Email:</strong> {selectedAdmin.email}
+    </div>
+    <div>
+      <strong>Phone:</strong> {selectedAdmin.phone || 'N/A'}
+    </div>
+    <div>
+      <strong>NIN:</strong> {selectedAdmin.nin || 'N/A'}
+    </div>
+    <div>
+      <strong>Website:</strong> {selectedAdmin.website_name || 'N/A'}
+    </div>
+    <div>
+      <strong>Account Name:</strong> {selectedAdmin.account_name || 'N/A'}
+    </div>
+    <div>
+      <strong>Account Number:</strong> {selectedAdmin.account_number || 'N/A'}
+    </div>
+    <div>
+      <strong>Bank:</strong> {selectedAdmin.bank_name || 'N/A'}
+    </div>
+    <div>
+      <strong>Bank Code:</strong> {selectedAdmin.bank_code || 'N/A'}
+    </div>
+    <div>
+      <strong>Paystack Subaccount:</strong> {selectedAdmin.paystack_subaccount_code || 'N/A'}
+    </div>
+    <div>
+      <strong>Referral Discount:</strong> ₦{selectedAdmin.referral_discount || 0}
+    </div>
+    <div className="col-span-2 mt-2">
+      {selectedAdmin.subdomain && (
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">Admin Login Link:</span>
+          <a
+            href={`https://${selectedAdmin.subdomain}.growthsmallbeez.com/auth`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-brand-800"
+          >
+            https://{selectedAdmin.subdomain}.growthsmallbeez.com/auth
+          </a>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              navigator.clipboard.writeText(`https://${selectedAdmin.subdomain}.growthsmallbeez.com/auth`);
+              toast({ title: "Copied!", description: "Admin login link copied to clipboard" });
+            }}
+          >
+            <Copy className="h-4 w-4 mr-1" /> Copy Link
+          </Button>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
           </DialogContent>
         </Dialog>
       )}

@@ -38,55 +38,55 @@ const App = () => {
     console.log('[App] Rendering. Current route:', window.location.pathname);
 
     return (
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
           <BrowserRouter>
-            <AuthProvider>
-              <Toaster />
-              <Sonner />
-              <Suspense fallback={<LoadingFallback message="Loading ShopNaija..." />}>
-                <Routes>
-                  {/* Authentication routes */}
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/auth/callback" element={<AuthCallback />} />
-                  
-                  {/* Super Admin Routes */}
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <ProtectedRoute requiredRole="superadmin">
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+          <Suspense fallback={<LoadingFallback message="Loading ShopNaija..." />}>
+            <Routes>
+              {/* Authentication routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+
+              {/* Super Admin Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute requiredRole="superadmin">
                         <SuperAdminDashboardPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  
-                  {/* Admin Routes */}
-                  <Route
-                    path="/admin/dashboard"
-                    element={
-                      <ProtectedRoute requiredRole="admin">
-                        <DashboardLayout>
-                          <AdminDashboard />
-                        </DashboardLayout>
-                      </ProtectedRoute>
-                    }
-                  />
-                  
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin Routes */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <DashboardLayout>
+                      <AdminDashboard />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+
                   {/* Default route */}
                   <Route path="/" element={<LandingPage />} />
-                  
-                  {/* 404 fallback */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+
+              {/* 404 fallback */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
             </AuthProvider>
-          </BrowserRouter>
-        </QueryClientProvider>
-      </ErrorBoundary>
-    );
+        </BrowserRouter>
+    </QueryClientProvider>
+  </ErrorBoundary>
+);
   } catch (err) {
     console.error('[App] Synchronous error during render:', err, window.location.pathname);
     throw err;

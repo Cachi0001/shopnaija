@@ -58,17 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Auth state management
   useEffect(() => {
     setLoading(true);
-    let loadingTimeout: NodeJS.Timeout | null = null;
-    // Timeout for loading state (max 15 seconds)
-    loadingTimeout = setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Authentication Timeout",
-        description: "Authentication took too long. Please try again.",
-        variant: "destructive",
-      });
-      console.error('[AuthProvider] Loading timed out after 15 seconds.');
-    }, 15000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
@@ -82,11 +71,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Redirect logic
             if (['/login', '/auth'].includes(location.pathname)) {
-              const redirectPath = fetchedUser?.role === 'superadmin' 
-                ? '/dashboard' 
-                : fetchedUser?.role === 'admin' 
-                  ? '/admin/dashboard' 
-                  : '/';
+              let redirectPath = '/';
+              if (fetchedUser?.role === 'superadmin') {
+                redirectPath = '/dashboard';
+              } else if (fetchedUser?.role === 'admin') {
+                // Use slug/subdomain as the admin dashboard path
+                redirectPath = fetchedUser.subdomain ? `/admin/${fetchedUser.subdomain}` : '/admin-dashboard';
+              }
               navigate(redirectPath, { replace: true });
             }
           }
@@ -95,15 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setIsSuperAdmin(false);
           setIsAdmin(false);
-          // Clear all Supabase session data (localStorage/sessionStorage)
-          try {
-            localStorage.removeItem('supabase.auth.token');
-            sessionStorage.removeItem('supabase.auth.token');
-          } catch (e) {
-            // Ignore if not present
-          }
-          if (["/dashboard", "/admin"].some(p => location.pathname.startsWith(p))) {
-            navigate("/login", { replace: true });
+          if (['/dashboard', '/admin'].some(p => location.pathname.startsWith(p))) {
+            navigate('/login', { replace: true });
           }
         }
       } catch (error) {
@@ -115,63 +99,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } finally {
         setLoading(false);
-        if (loadingTimeout) clearTimeout(loadingTimeout);
       }
     });
 
     // Initial session check
     const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const user = await AuthService.getCurrentUser(session.user);
-          setUser(user);
-          setSession(session);
-          setIsSuperAdmin(user?.role === 'superadmin');
-          setIsAdmin(user?.role === 'admin');
-        } else {
-          setUser(null);
-          setSession(null);
-          setIsSuperAdmin(false);
-          setIsAdmin(false);
-        }
-      } catch (err) {
-        toast({
-          title: "Session Error",
-          description: "Could not restore session. Please log in again.",
-          variant: "destructive",
-        });
-        setUser(null);
-        setSession(null);
-        setIsSuperAdmin(false);
-        setIsAdmin(false);
-      } finally {
-        setLoading(false);
-        if (loadingTimeout) clearTimeout(loadingTimeout);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const user = await AuthService.getCurrentUser(session.user);
+        setUser(user);
+        setSession(session);
+        setIsSuperAdmin(user?.role === 'superadmin');
+        setIsAdmin(user?.role === 'admin');
       }
+      setLoading(false);
     };
 
     checkSession();
 
-    return () => {
-      subscription?.unsubscribe();
-      if (loadingTimeout) clearTimeout(loadingTimeout);
-    };
+    return () => subscription?.unsubscribe();
   }, [navigate, toast, location.pathname]);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
-    let loadingTimeout: NodeJS.Timeout | null = null;
-    // 15s timeout for login
-    loadingTimeout = setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Login Timeout",
-        description: "Login took too long. Please try again.",
-        variant: "destructive",
-      });
-      console.error('[AuthProvider] Login timed out after 15 seconds.');
-    }, 15000);
     try {
       await AuthService.signIn(email, password);
     } catch (error: any) {
@@ -183,37 +133,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     } finally {
       setLoading(false);
-      if (loadingTimeout) clearTimeout(loadingTimeout);
     }
   };
 
-
   const logout = async () => {
     setLoading(true);
-    let loadingTimeout: NodeJS.Timeout | null = null;
-    // 15s timeout for logout
-    loadingTimeout = setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Logout Timeout",
-        description: "Logout took too long. Please try again.",
-        variant: "destructive",
-      });
-      console.error('[AuthProvider] Logout timed out after 15 seconds.');
-    }, 15000);
     try {
       await AuthService.signOut();
-      // Clear all Supabase session data (localStorage/sessionStorage)
-      try {
-        localStorage.removeItem('supabase.auth.token');
-        sessionStorage.removeItem('supabase.auth.token');
-      } catch (e) {
-        // Ignore if not present
-      }
-      setUser(null);
-      setSession(null);
-      setIsSuperAdmin(false);
-      setIsAdmin(false);
       navigate('/login', { replace: true });
     } catch (error: any) {
       toast({
@@ -223,10 +149,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } finally {
       setLoading(false);
-      if (loadingTimeout) clearTimeout(loadingTimeout);
     }
   };
-
 
   const value = {
     user,

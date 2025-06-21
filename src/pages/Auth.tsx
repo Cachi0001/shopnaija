@@ -53,17 +53,17 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    let loadingTimeout: NodeJS.Timeout | null = null;
-    // 15s timeout for login/signup
-    loadingTimeout = setTimeout(() => {
+
+    // Set a timeout to stop loading and show an error after 15 seconds
+    const timeout = setTimeout(() => {
       setIsLoading(false);
       toast({
-        title: "Login/Signup Timeout",
-        description: "Authentication took too long. Please try again.",
+        title: "Login Timeout",
+        description: "Login took too long. Please try again.",
         variant: "destructive",
       });
-      console.error('[AuthPage] Login/Signup timed out after 15 seconds.');
     }, 15000);
+
     try {
       await login(email, password);
       toast({
@@ -362,11 +362,7 @@ const Auth = () => {
                         className="w-full bg-green-600 hover:bg-green-700"
                         disabled={isLoading}
                       >
-                        {isLoading ? (
-                          <LoadingFallback timeout={15000} message="Processing..." />
-                        ) : (
-                          <span className="ml-2">Login with Email</span>
-                        )}
+                        {isLoading ? (<><LoadingFallback message="" /><span className="ml-2">Logging in...</span></>) : "Login with Email"}
                       </Button>
                     </form>
                   </TabsContent>
