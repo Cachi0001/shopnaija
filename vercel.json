@@ -1,23 +1,42 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "*"
-      },
-      "continue": true
-    }
-  ],
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "/api/$1" 
+    },
+    {
+      "source": "/admin/:id(.*)",
+      "destination": "/index.html" 
+    },
+    {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/index.html" 
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://growsmallbeez.vercel.app",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ],
+  "wildcard": [
+    {
+      "domain": "*.growsmallbeez.vercel.app",
+      "value": "/index.html"
     }
   ]
 }
