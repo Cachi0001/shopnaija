@@ -63,6 +63,7 @@ interface CreateAdminDialogProps {
 export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [createdSlug, setCreatedSlug] = useState<string | null>(null);
   
   const form = useForm<AdminFormValues>({
     resolver: zodResolver(adminSchema),
@@ -95,11 +96,15 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
 
   const onSubmit = async (values: AdminFormValues) => {
     setIsLoading(true);
+    setCreatedSlug(null);
     try {
-      await AdminService.createAdmin({
+      const admin = await AdminService.createAdmin({
         ...values,
         role: 'admin',
       });
+      if (admin?.slug) {
+        setCreatedSlug(admin.slug);
+      }
       toast({
         title: 'Admin Created',
         description: `An invitation has been sent to ${values.email}.`,
@@ -335,6 +340,25 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
             </DialogFooter>
           </form>
         </Form>
+        {createdSlug && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-center">
+            <div>
+              <strong>Storefront URL:</strong><br />
+              <a
+                href={`https://growsmallbeez.vercel.app/admin/${createdSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline text-green-700"
+              >
+                https://growsmallbeez.vercel.app/admin/{createdSlug}
+              </a>
+            </div>
+            <div className="mt-2">
+              <strong>Admin Dashboard URL:</strong><br />
+              <span className="text-green-700">https://growsmallbeez.vercel.app/admin-dashboard</span>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
