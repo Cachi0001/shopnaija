@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, Github } from "lucide-react";
+import LoadingFallback from "@/components/LoadingFallback";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -322,7 +323,7 @@ const Auth = () => {
                         className="w-full bg-green-600 hover:bg-green-700"
                         disabled={isLoading}
                       >
-                        {isLoading ? "Logging in..." : "Login with Email"}
+                        {isLoading ? (<><LoadingFallback message="" /><span className="ml-2">Logging in...</span></>) : "Login with Email"}
                       </Button>
                     </form>
                   </TabsContent>
