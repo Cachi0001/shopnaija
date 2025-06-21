@@ -222,109 +222,13 @@ const AdminManagement = () => {
           />
         </div>
         
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-brand-800 hover:bg-brand-700">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Create Admin
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Admin</DialogTitle>
-              <DialogDescription>
-                Add a new admin to the GrowthSmallBeez platform. A temporary password will be provided.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              handleCreateAdmin(new FormData(e.target as HTMLFormElement));
-            }}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input id="name" name="name" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" name="email" type="email" required />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="password">Temporary Password *</Label>
-                    <Input 
-                      id="password" 
-                      name="password" 
-                      type="password"
-                      placeholder="Create a temporary password"
-                      required 
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Admin will need to change this on first login
-                    </p>
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" name="phone" />
-                  </div>
-                </div>
+        {/* Use the shared CreateAdminDialog for admin creation */}
+        <Button className="bg-brand-800 hover:bg-brand-700" onClick={() => setIsCreateDialogOpen(true)}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Create Admin
+        </Button>
+        <CreateAdminDialog isOpen={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="nin">NIN *</Label>
-                    <Input id="nin" name="nin" pattern="[0-9]{11}" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="subdomain">Subdomain *</Label>
-                    <Input id="subdomain" name="subdomain" required />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="website_name">Website Name *</Label>
-                    <Input id="website_name" name="website_name" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="primary_color">Primary Color</Label>
-                    <Input id="primary_color" name="primary_color" type="color" defaultValue="#1a56db" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="account_name">Account Name</Label>
-                    <Input id="account_name" name="account_name" />
-                  </div>
-                  <div>
-                    <Label htmlFor="account_number">Account Number</Label>
-                    <Input id="account_number" name="account_number" />
-                  </div>
-                  <div>
-                    <Label htmlFor="bank_name">Bank Name</Label>
-                    <Input id="bank_name" name="bank_name" />
-                  </div>
-                   <div>
-                    <Label htmlFor="bank_code">Bank Code</Label>
-                    <Input id="bank_code" name="bank_code" />
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button 
-                  type="submit" 
-                  disabled={createAdminMutation.isPending}
-                  className="bg-brand-800 hover:bg-brand-700"
-                >
-                  {createAdminMutation.isPending ? "Creating..." : "Create Admin"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {/* Admins Table */}

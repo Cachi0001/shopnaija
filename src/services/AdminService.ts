@@ -93,7 +93,7 @@ export class AdminService {
   }
 
   // NEW: Get admin by slug
-  static async getAdminBySlug(slug?: string) {
+  static async getAdminBySlug(slug?: string): Promise<import("@/types").Admin | null> {
     const { data, error } = await supabase
       .from('users')
       .select('*')
