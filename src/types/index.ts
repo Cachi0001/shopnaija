@@ -457,7 +457,7 @@ export type Database = {
           name: string
           nin?: string | null
           payment_status?: string | null
-          paystack_subaccount_code?: string | null
+          subaccount_code?: string | null
           phone?: string | null
           phone_verified?: boolean | null
           primary_color?: string | null
@@ -466,7 +466,7 @@ export type Database = {
           referred_by?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           subdomain?: string | null
-          slug?: string | null // Added slug field
+          slug?: string | null
           temp_password?: string | null
           updated_at?: string | null
           website_name?: string | null
@@ -488,7 +488,7 @@ export type Database = {
           name?: string
           nin?: string | null
           payment_status?: string | null
-          paystack_subaccount_code?: string | null
+          subaccount_code?: string | null
           phone?: string | null
           phone_verified?: boolean | null
           primary_color?: string | null
@@ -706,7 +706,7 @@ export interface AdminCreateData {
   email: string;
   password: string;
   role: 'admin';
-  slug: string; // Added slug to creation data
+  slug?: string; // Added slug to creation data
   phone?: string;
   nin: string;
   subdomain?: string;
@@ -719,6 +719,7 @@ export interface AdminCreateData {
   bank_code?: string;
   is_active?: boolean;
   referral_code?: string;
+  subaccount_code?: string;
 }
 
 export interface Product {

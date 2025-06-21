@@ -1,47 +1,46 @@
-
 import React, { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 interface LoadingFallbackProps {
   message?: string;
   timeout?: number;
+  timeoutReached?: boolean;
 }
 
-const LoadingFallback = ({ message = "Loading ShopNaija...", timeout = 8000 }: LoadingFallbackProps) => {
+const LoadingFallback = ({ message = "Loading ShopNaija...", timeout = 8000, timeoutReached = false }: LoadingFallbackProps) => {
   const [showTimeout, setShowTimeout] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (timeoutReached) {
       setShowTimeout(true);
-    }, timeout);
+    } else {
+      const timer = setTimeout(() => {
+        setShowTimeout(true);
+      }, timeout);
 
-    return () => clearTimeout(timer);
-  }, [timeout]);
+      // Clean up the timer when the component unmounts
+      return () => clearTimeout(timer);
+    }
+  }, [timeout, timeoutReached]);
 
-  if (showTimeout) {
+  // Show timeout fallback if triggered or forced via prop
+  if (showTimeout || timeoutReached) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
         <div className="text-center max-w-md">
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Loading Issue</h1>
-            <p className="text-gray-600 mb-4">
-              GrowSmallBeez is taking longer than expected to load. Please try refreshing the page.
-            </p>
-          </div>
-          <div className="space-y-3">
-            <button 
-              onClick={() => window.location.reload()} 
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Refresh Page
-            </button>
-            <button 
-              onClick={() => window.location.href = '/'} 
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              Go to Homepage
-            </button>
-          </div>
+          <h2 className="text-2xl font-semibold mb-2">Request Timeout</h2>
+          <p className="mb-4">Something is taking too long. Please try reloading the page.</p>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onClick={() => window.location.reload()}
+          >
+            Reload
+          </button>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Go to Homepage
+          </button>
         </div>
       </div>
     );

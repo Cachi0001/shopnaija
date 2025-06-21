@@ -1,6 +1,6 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { AuthService } from "@/services/AuthService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Github } from "lucide-react";
+import LoadingFallback from "@/components/LoadingFallback";
 
 interface LoginModalProps {
   children: React.ReactNode;
 }
 
 const LoginModal = ({ children }: LoginModalProps) => {
+  const { timeout } = useAuth();
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -107,6 +109,7 @@ const LoginModal = ({ children }: LoginModalProps) => {
     setOpen(false);
   };
 
+  if (timeout) return <LoadingFallback timeoutReached={true} />;
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

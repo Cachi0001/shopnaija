@@ -48,7 +48,7 @@ const adminSchema = z.object({
   bank_code: z.string().optional(),
   account_name: z.string().optional(),
   account_number: z.string().optional(),
-  paystack_subaccount_code: z.string().optional(),
+  subaccount_code: z.string().optional(),
   primary_color: z.string().optional(),
   referral_code: z.string().optional(),
 });
@@ -80,7 +80,7 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
       bank_code: '',
       account_name: '',
       account_number: '',
-      paystack_subaccount_code: '',
+      subaccount_code: '',
       primary_color: '',
       referral_code: '',
     },
@@ -99,7 +99,19 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
     setCreatedSlug(null);
     try {
       const admin = await AdminService.createAdmin({
-        ...values,
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        phone: values.phone,
+        location: values.location,
+        website_name: values.website_name,
+        subdomain: values.subdomain,
+        nin: values.nin,
+        bank_name: values.bank_name,
+        bank_code: values.bank_code,
+        account_name: values.account_name,
+        account_number: values.account_number,
+        subaccount_code: values.subaccount_code,
         role: 'admin',
       });
       if (admin?.slug) {
@@ -272,7 +284,20 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
                 <FormItem>
                   <FormLabel>Account Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="0123456789 (optional)" {...field} />
+                    <Input placeholder="1234567890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="subaccount_code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Subaccount Code</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Paystack Subaccount Code" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -293,7 +318,7 @@ export function CreateAdminDialog({ isOpen, onOpenChange }: CreateAdminDialogPro
             />
             <FormField
               control={form.control}
-              name="paystack_subaccount_code"
+              name="subaccount_code"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Paystack Subaccount Code (Optional)</FormLabel>

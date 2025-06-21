@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AdminService, type AdminCreateData } from "@/services/AdminService";
+import { AdminService, AdminCreateData } from "@/services/AdminService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +93,7 @@ const AdminManagement = () => {
     const adminData: AdminCreateData = {
       name: formData.get('name') as string,
       email: formData.get('email') as string,
+      location: formData.get('location') as string,
       password: formData.get('password') as string,
       phone: formData.get('phone') as string,
       nin: formData.get('nin') as string,
@@ -103,7 +103,11 @@ const AdminManagement = () => {
       account_name: formData.get('account_name') as string,
       account_number: formData.get('account_number') as string,
       bank_name: formData.get('bank_name') as string,
-      bank_code: formData.get('bank_code') as string, // Added bank_code
+      bank_code: formData.get('bank_code') as string,
+      is_active: true,
+      referral_code: formData.get('referral_code') as string,
+      subaccount_code: formData.get('subaccount_code') as string,
+    role: 'admin',
     };
 
     createAdminMutation.mutate(adminData, {

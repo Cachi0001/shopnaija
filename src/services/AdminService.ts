@@ -1,6 +1,27 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AuthService } from "./AuthService";
-import { AdminCreateData } from "@/types/index"; 
+
+export type AdminCreateData = {
+  id?: string;
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'superadmin' | 'customer';
+  subdomain?: string;
+  slug?: string;
+  referral_code?: string;
+  is_active?: boolean;
+  account_name?: string;
+  account_number?: string;
+  bank_name?: string;
+  bank_code?: string;
+  subaccount_code?: string;
+  website_name?: string;
+  primary_color?: string;
+  nin?: string;
+  phone?: string;
+  location?: string;
+};
 
 export class AdminService {
   static async createAdmin(adminData: AdminCreateData) {
@@ -9,7 +30,7 @@ export class AdminService {
 
       const { data, error } = await supabase.functions.invoke('create-admin', {
         body: adminData,
-      });
+      }); // adminData now includes subaccount_code if present
 
       if (error) {
         throw error;
@@ -72,7 +93,7 @@ export class AdminService {
   }
 
   // NEW: Get admin by slug
-  static async getAdminBySlug(slug: string) {
+  static async getAdminBySlug(slug?: string) {
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -88,7 +109,7 @@ export class AdminService {
     return data;
   }
 
-  static async updateAdmin(id: string, updates: Partial<AdminCreateData & { is_active: boolean; referral_code: string }>) {
+  static async updateAdmin(id: string, updates: Partial<AdminCreateData>) {
     const { data, error } = await supabase
       .from('users')
       .update(updates)
@@ -139,4 +160,5 @@ export class AdminService {
     if (error) throw error;
     return data;
   }
+
 }

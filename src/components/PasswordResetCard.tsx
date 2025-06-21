@@ -1,5 +1,6 @@
-
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import LoadingFallback from "@/components/LoadingFallback";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthService } from "@/services/AuthService";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
 
 const PasswordResetCard = () => {
+  const { timeout } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -68,6 +70,7 @@ const PasswordResetCard = () => {
   };
 
   if (isSuccess) {
+    if (timeout) return <LoadingFallback timeoutReached={true} />; // Show LoadingFallback if timeout is true
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white px-4">
         <div className="w-full max-w-md">

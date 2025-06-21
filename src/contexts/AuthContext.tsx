@@ -11,6 +11,7 @@ interface AuthContextType {
   session: Session | null;
   subdomain: string | null;
   loading: boolean;
+  timeout: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isSuperAdmin: boolean;
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [subdomain, setSubdomainState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [timeout, setTimeoutState] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -55,11 +57,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [location.pathname, subdomain, setSubdomain]);
 
-  // Auth state management
   useEffect(() => {
-    setLoading(true);
+    let didTimeout = false;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Helper: force clear local/session storage if loading is stuck
+    const forceClearStorage = () => {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        console.warn("[AuthContext] Forced localStorage/sessionStorage clear due to stuck loading.");
+      } catch (e) {
+        console.error("[AuthContext] Storage clear error:", e);
+      }
+    };
+
+    // Fetch session on mount
+    const getSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("[AuthContext] Session fetch error:", error);
+        }
+        setSession(data?.session || null);
+        // Always fetch user profile if session exists, else set null
+        if (data?.session?.user) {
+          try {
+            const userProfile = await AuthService.getCurrentUser(data.session.user);
+            setUser(userProfile || null);
+            setIsSuperAdmin(userProfile?.role === 'superadmin');
+            setIsAdmin(userProfile?.role === 'admin');
+          } catch (profileErr) {
+            console.error("[AuthContext] Error fetching user profile:", profileErr);
+            setUser(null);
+            setIsSuperAdmin(false);
+            setIsAdmin(false);
+          }
+        } else {
+          setUser(null);
+          setIsSuperAdmin(false);
+          setIsAdmin(false);
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("[AuthContext] getSession threw:", err);
+        setLoading(false);
+      }
+    };
+    getSession();
+
+    // Listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
           if (session) {
@@ -82,9 +129,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
-          setSession(null);
-          setIsSuperAdmin(false);
-          setIsAdmin(false);
+          setSession(session);
+          if (session?.user) {
+            try {
+              const userProfile = await AuthService.getCurrentUser(session.user);
+              setUser(userProfile || null);
+              setIsSuperAdmin(userProfile?.role === 'superadmin');
+              setIsAdmin(userProfile?.role === 'admin');
+            } catch (profileErr) {
+              console.error("[AuthContext] Error fetching user profile:", profileErr);
+              setUser(null);
+              setIsSuperAdmin(false);
+              setIsAdmin(false);
+            }
+          } else {
+            setUser(null);
+            setIsSuperAdmin(false);
+            setIsAdmin(false);
+          }
+          setLoading(false);
           if (['/dashboard', '/admin'].some(p => location.pathname.startsWith(p))) {
             navigate('/login', { replace: true });
           }
@@ -93,7 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Auth state change error:', error);
         toast({
           title: "Authentication Error",
-          description: "Please try again",
+          description: error.message,
           variant: "destructive",
         });
       } finally {
@@ -101,22 +164,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Initial session check
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const user = await AuthService.getCurrentUser(session.user);
-        setUser(user);
-        setSession(session);
-        setIsSuperAdmin(user?.role === 'superadmin');
-        setIsAdmin(user?.role === 'admin');
+    // Timeout fallback if loading takes too long
+    const timer = setTimeout(() => {
+      if (loading) {
+        setTimeoutState(true);
+        setLoading(false);
+        didTimeout = true;
+        forceClearStorage();
+        console.warn("[AuthContext] Auth loading timeout reached, storage cleared.");
       }
-      setLoading(false);
+    }, 10000);
+
+    return () => {
+      listener.subscription.unsubscribe();
+      clearTimeout(timer);
     };
-
-    checkSession();
-
-    return () => subscription?.unsubscribe();
   }, [navigate, toast, location.pathname]);
 
   const login = async (email: string, password: string) => {
@@ -151,19 +213,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = {
-    user,
-    session,
-    subdomain,
-    loading,
-    login,
-    logout,
-    isSuperAdmin,
-    isAdmin,
-    setSubdomain
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, session, subdomain, loading, timeout, login, logout, isSuperAdmin, isAdmin, setSubdomain }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
