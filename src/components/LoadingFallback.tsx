@@ -23,29 +23,7 @@ const LoadingFallback = ({ message = "Loading ShopNaija...", timeout = 8000, tim
     }
   }, [timeout, timeoutReached]);
 
-  // Show timeout fallback if triggered or forced via prop
-  if (showTimeout || timeoutReached) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl font-semibold mb-2">Request Timeout</h2>
-          <p className="mb-4">Something is taking too long. Please try reloading the page.</p>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            onClick={() => window.location.reload()}
-          >
-            Reload
-          </button>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Go to Homepage
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // Always show the loader and loading message, never show timeout fallback
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
       <div className="text-center">
