@@ -284,7 +284,7 @@ const LandingPage = () => {
                 <ul className="text-left space-y-3 mb-6 sm:mb-8">
                   <li className="flex items-center text-sm sm:text-base">
                     <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 flex-shrink-0" />
-                    <span>Custom subdomain (yourstore.growsmallbeez.com)</span>
+                    <span>Custom subdomain (yourstore.growsmallbeez.vercel.app)</span>
                   </li>
                   <li className="flex items-center text-sm sm:text-base">
                     <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mr-3 flex-shrink-0" />

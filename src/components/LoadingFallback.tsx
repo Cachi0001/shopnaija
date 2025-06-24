@@ -25,13 +25,14 @@ const LoadingFallback = ({ message = "Loading ShopNaija...", timeout = 8000, tim
 
   // Always show the loader and loading message, never show timeout fallback
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-green-600 mx-auto mb-4" />
-        <p className="text-gray-600 text-lg">{message}</p>
-        <p className="text-gray-400 text-sm mt-2">Please wait...</p>
-      </div>
-    </div>
+    // <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+    //   <div className="text-center">
+    //     <Loader2 className="h-8 w-8 animate-spin text-green-600 mx-auto mb-4" />
+    //     <p className="text-gray-600 text-lg">{message}</p>
+    //     <p className="text-gray-400 text-sm mt-2">Please wait...</p>
+    //   </div>
+    // </div>
+    <div></div>
   );
 };
 
