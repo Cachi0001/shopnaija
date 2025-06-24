@@ -109,7 +109,7 @@ const LoginModal = ({ children }: LoginModalProps) => {
     setOpen(false);
   };
 
-  if (timeout) return <LoadingFallback timeoutReached={true} />;
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
